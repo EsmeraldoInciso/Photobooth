@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Booth</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="app-header">
+    <div class="header-left">
+      <span class="material-icons-round logo-icon">photo_camera</span>
+      <h1>Photo Booth</h1>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" onclick="toggleSettings()" title="Settings">
+        <span class="material-icons-round">tune</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main-content">
+
+    <!-- Camera + Live Preview -->
+    <div class="booth-area">
+
+      <!-- Camera -->
+      <div class="camera-panel">
+        <div class="camera-container" id="cameraContainer">
+          <video id="video" autoplay playsinline muted></video>
+          <div class="countdown-overlay" id="countdownOverlay">
+            <span id="countdownNumber"></span>
+          </div>
+          <div class="flash-overlay" id="flashOverlay"></div>
+          <div class="camera-off" id="cameraOff">
+            <span class="material-icons-round">videocam_off</span>
+            <p>Camera is off</p>
+            <button class="btn btn-primary" onclick="startCamera()">
+              <span class="material-icons-round">videocam</span> Start Camera
+            </button>
+          </div>
+          <div class="shot-counter" id="shotCounter"></div>
+        </div>
+        <div class="camera-controls">
+          <button class="ctrl-btn" onclick="flipCamera()" title="Flip Camera">
+            <span class="material-icons-round">flip_camera_ios</span>
+          </button>
+          <button class="capture-btn" id="btnCapture" onclick="startCapture()" title="Take Photo">
+            <span class="material-icons-round">camera</span>
+          </button>
+          <button class="ctrl-btn" onclick="cycleTimer()" title="Timer">
+            <span class="material-icons-round">timer</span>
+            <span class="timer-badge" id="timerBadge">OFF</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="preview-panel" id="previewPanel">
+        <div class="preview-label">
+          <span class="material-icons-round">preview</span> Live Preview
+        </div>
+        <div class="preview-strip-wrap">
+          <canvas id="livePreviewCanvas"></canvas>
+        </div>
+        <div class="preview-actions" id="previewActions" style="display:none;">
+          <button class="btn btn-sm btn-outline" onclick="resetBooth()">
+            <span class="material-icons-round">replay</span> Reset
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="downloadPhoto()">
+            <span class="material-icons-round">download</span> Download
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="printPhoto()">
+            <span class="material-icons-round">print</span> Print
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="openEmailModal()">
+            <span class="material-icons-round">email</span> Email
+          </button>
+        </div>
+        <div class="status-msg" id="statusMsg"></div>
+      </div>
+    </div>
+
+    <!-- Layout Selector -->
+    <section class="option-section">
+      <h3><span class="material-icons-round">grid_view</span> Layout</h3>
+      <div class="option-scroll" id="layoutGrid"></div>
+    </section>
+
+    <!-- Frame Selector -->
+    <section class="option-section">
+      <h3><span class="material-icons-round">filter_frames</span> Frame</h3>
+      <div class="option-scroll" id="frameGrid"></div>
+    </section>
+
+    <!-- Filter Selector -->
+    <section class="option-section">
+      <h3><span class="material-icons-round">auto_awesome</span> Filter</h3>
+      <div class="option-scroll" id="filterGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- ═══ EMAIL MODAL ═══ -->
+  <div class="modal-backdrop" id="emailModal">
+    <div class="modal-content email-modal">
+      <div class="modal-header">
+        <h2>Send Photo via Email</h2>
+        <button class="icon-btn" onclick="closeEmailModal()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Enter your email to receive this photo.</p>
+        <div class="form-group">
+          <label for="recipientName">Your Name</label>
+          <input type="text" id="recipientName" placeholder="Juan Dela Cruz" maxlength="60" required>
+        </div>
+        <div class="form-group">
+          <label for="recipientEmail">Your Email</label>
+          <input type="email" id="recipientEmail" placeholder="juan@email.com" required>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-outline" onclick="closeEmailModal()">Cancel</button>
+          <button class="btn btn-primary" id="btnSendEmail" onclick="sendEmail()">
+            <span class="material-icons-round">send</span> Send Photo
+          </button>
+        </div>
+        <div class="email-status" id="emailStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS MODAL ═══ -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-content settings-modal">
+      <div class="modal-header">
+        <h2>Settings</h2>
+        <button class="icon-btn" onclick="toggleSettings()">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="settings-body">
+        <div class="setting-row">
+          <label>Mirror Camera</label>
+          <label class="switch">
+            <input type="checkbox" id="settingMirror" checked onchange="updateSettings()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>Flash Effect</label>
+          <label class="switch">
+            <input type="checkbox" id="settingFlash" checked onchange="updateSettings()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>Shutter Sound</label>
+          <label class="switch">
+            <input type="checkbox" id="settingSound" checked onchange="updateSettings()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>Event Title</label>
+          <input type="text" id="settingTitle" placeholder="e.g. John & Jane's Wedding" maxlength="50" onchange="updateSettings()">
+        </div>
+        <div class="setting-row">
+          <label>Event Date</label>
+          <input type="text" id="settingDate" placeholder="e.g. February 14, 2025" maxlength="30" onchange="updateSettings()">
+        </div>
+        <hr class="setting-divider">
+        <h4 class="setting-section-title">EmailJS Configuration</h4>
+        <p class="setting-hint">Get these from <a href="https://www.emailjs.com/" target="_blank">emailjs.com</a> (free tier: 200 emails/month)</p>
+        <div class="setting-row">
+          <label>Public Key</label>
+          <input type="text" id="settingEmailPublicKey" placeholder="Your EmailJS public key" onchange="updateSettings()">
+        </div>
+        <div class="setting-row">
+          <label>Service ID</label>
+          <input type="text" id="settingEmailServiceId" placeholder="e.g. service_xxxxxxx" onchange="updateSettings()">
+        </div>
+        <div class="setting-row">
+          <label>Template ID</label>
+          <input type="text" id="settingEmailTemplateId" placeholder="e.g. template_xxxxxxx" onchange="updateSettings()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden print iframe -->
+  <iframe id="printFrame" style="position:absolute;left:-9999px;top:-9999px;width:0;height:0;border:none;"></iframe>
+
+  <script src="script.js"></script>
+</body>
+</html>
