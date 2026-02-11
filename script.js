@@ -198,14 +198,18 @@ var state = {
 
 // ─── Initialize ─────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', function() {
+// Called by auth.js after successful login
+var boothInitialized = false;
+function initPhotoBooth() {
+  if (boothInitialized) return;
+  boothInitialized = true;
   loadSettings();
   renderLayouts();
   renderFrames();
   renderFilters();
   renderLivePreview();
   startCamera();
-});
+}
 
 // ─── Camera ─────────────────────────────────────────────────────
 
