@@ -1,43 +1,60 @@
 # 📸 Photo Booth — GitHub Pages + Firebase Auth
 
-A professional web-based photo booth with Firebase authentication, reCAPTCHA protection, device-based signup limits, and standard print layouts.
+Web-based photo booth with Firebase authentication, reCAPTCHA, device-based signup limits, and standard print layouts. Hosted on GitHub Pages.
 
 ## Features
 
 - 🔐 **Firebase Auth** — Email/password + Google Sign-In
-- 🤖 **reCAPTCHA v3** — Bot protection on login and signup
-- 📱 **Device Fingerprinting** — Limits signups to 2 per device per day
-- 📷 **Camera** with front/back flip and mirror toggle
-- ⏱️ **Timer** — Off, 3s, 5s, 10s countdown
-- 📐 **8 standard layouts** — 2×6" and 4×6" at 300 DPI
-- 🖼️ **9 frame styles** — White, Black, Cream, Pink, Mint, Lavender, Gold, Film
-- 🎨 **8 filters** — B&W, Sepia, Warm, Cool, Vivid, Fade, Noir
-- 👁️ **Live preview** — Real-time strip rendering as you capture
-- 📧 **Email photos** via EmailJS
-- ⬇️ **Download** and 🖨️ **Print** support
-- 🏷️ **Event branding** — Custom title and date on prints
+- 🤖 **reCAPTCHA v3** — Invisible bot protection
+- 📱 **Device Fingerprinting** — Max 2 signups per device per day
+- 🚀 **Splash Screen** — No login flash on reload
+- 👤 **Profile Page** — View account info, update name, delete account
+- 📷 **Camera** with flip, mirror, timer (3/5/10s)
+- 📐 **8 Layouts** — 2×6" and 4×6" at 300 DPI
+- 🖼️ **9 Frames** + **8 Filters**
+- 👁️ **Live Preview** — Real-time strip rendering
+- 📧 **Email** via EmailJS | ⬇️ **Download** | 🖨️ **Print**
 
 ## File Structure
 
 ```
-photo-booth/
-├── index.html      # Main page with auth + booth UI
-├── style.css       # All styles including auth screen
-├── auth.js         # Firebase Auth, reCAPTCHA, device fingerprint
-├── script.js       # Photo booth logic (camera, layouts, etc.)
-└── README.md       # This file
+Photobooth/
+├── index.html          ← / (main booth — requires login)
+├── style.css           ← shared styles
+├── auth.js             ← shared auth + splash + routing
+├── script.js           ← photo booth logic
+├── login/
+│   └── index.html      ← /login/ (sign in/up — public)
+├── profile/
+│   └── index.html      ← /profile/ (account info — requires login)
+└── README.md
 ```
+
+## How Routing Works
+
+Every page includes `auth.js` which:
+
+1. Shows a **splash screen** immediately (logo + spinner)
+2. Waits for Firebase to resolve auth state
+3. Redirects based on page type:
+
+| Page | Type | Logged In | Not Logged In |
+|------|------|-----------|---------------|
+| `/` | private | ✅ Show booth | → `/login/` |
+| `/login/` | public | → `/` | ✅ Show login |
+| `/profile/` | private | ✅ Show profile | → `/login/` |
+
+No login flash ever — the splash covers the transition.
 
 ## Setup
 
-### 1. Firebase (already configured)
+### Firebase (pre-configured)
 
-The app is pre-configured with Firebase project `photobooth-d59e8`. To use your own:
+Config is in `auth.js`. To use your own project:
 
-1. Edit `auth.js` and replace `firebaseConfig` with your own
+1. Create project at [console.firebase.google.com](https://console.firebase.google.com)
 2. Enable **Authentication** → Google + Email/Password
-3. Enable **Firestore Database**
-4. Set Firestore rules:
+3. Enable **Firestore** with rules:
 
 ```
 rules_version = '2';
@@ -50,69 +67,27 @@ service cloud.firestore {
 }
 ```
 
-### 2. reCAPTCHA v3
+4. Register a Web app and update config in `auth.js`
 
-Pre-configured with site key. To use your own:
+### reCAPTCHA v3
 
 1. Go to [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin)
-2. Create reCAPTCHA v3 with your domains
-3. Update the site key in `index.html` (script src) and `auth.js` (RECAPTCHA_SITE_KEY)
+2. Create v3 key with your domains
+3. Update site key in `auth.js` and all HTML files
 
-### 3. Deploy to GitHub Pages
+### Deploy
 
 ```bash
 git add .
-git commit -m "Add Firebase auth"
+git commit -m "Photo booth with auth"
 git push origin main
 ```
 
-Enable Pages in repo Settings → Pages → Source: main branch.
+Enable Pages: repo **Settings → Pages → Source: main**
 
-### 4. EmailJS (optional)
+### EmailJS (optional)
 
-Configure in the app's Settings panel with your EmailJS keys.
-
-## How Auth Works
-
-```
-User opens site
-    ↓
-Auth Screen shown
-    ↓
-Login or Signup
-    ↓
-reCAPTCHA v3 token generated ← bot protection
-    ↓
-[Signup only] Device fingerprint checked
-    ↓
-[Signup only] Firestore: count < 2 today? ← device limit
-    ↓
-Firebase Auth: create/sign-in
-    ↓
-[Signup only] Record signup in Firestore + localStorage
-    ↓
-Auth state listener → show Photo Booth
-```
-
-## Device Signup Limit
-
-To prevent abuse, signups are limited to **2 accounts per device per day**:
-
-1. **FingerprintJS** generates a browser-based device ID
-2. On signup, checks Firestore collection `device_signups` for today's count
-3. If count >= 2, signup is blocked with a message
-4. **localStorage** serves as a fallback if Firestore is unreachable
-5. Login (existing accounts) is not limited — only new signups
-
-## Technologies
-
-- Firebase Auth (compat SDK v10.12)
-- Cloud Firestore
-- reCAPTCHA v3
-- FingerprintJS v4
-- EmailJS
-- HTML5 Canvas (300 DPI rendering)
-- getUserMedia API
+Configure in the app's ⚙️ Settings panel.
 
 ## License
 

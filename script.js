@@ -198,7 +198,7 @@ var state = {
 
 // ─── Initialize ─────────────────────────────────────────────────
 
-// Called by auth.js after successful login
+// Called by onAuthReady() after login confirmed
 var boothInitialized = false;
 function initPhotoBooth() {
   if (boothInitialized) return;
