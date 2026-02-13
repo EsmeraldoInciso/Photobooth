@@ -45,7 +45,6 @@
         </div>
       </div>
 
-      <!-- States: only one visible at a time -->
       <div id="galleryLoading" class="gallery-loading">
         <div class="splash-spinner" style="margin:40px auto;"></div>
         <p style="text-align:center;color:#8585A8;">Loading gallery...</p>
@@ -62,14 +61,17 @@
     </main>
   </div>
 
-  <!-- Lightbox — completely separate, hidden by default -->
+  <!-- Lightbox -->
   <div class="lightbox-overlay" id="lightboxOverlay" style="display:none;">
     <button class="lightbox-close" onclick="closeLightbox()"><span class="material-icons-round">close</span></button>
     <div class="lightbox-center">
       <img id="lightboxImg" src="" alt="Photo">
     </div>
     <div class="lightbox-bottom">
-      <button class="btn btn-outline lightbox-btn" onclick="downloadLightboxPhoto()"><span class="material-icons-round">download</span> Download</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline lightbox-btn" onclick="downloadLightboxPhoto()"><span class="material-icons-round">download</span> Download</button>
+        <button class="btn btn-outline lightbox-btn lightbox-delete-btn" onclick="deleteLightboxPhoto()"><span class="material-icons-round">delete</span> Delete</button>
+      </div>
       <div class="lightbox-meta" id="lightboxMeta"></div>
     </div>
   </div>
@@ -89,44 +91,52 @@
     }
 
     function loadGallery() {
+      var firebasePhotos = [];
+      var localPhotos = [];
+
+      try {
+        localPhotos = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
+        localPhotos.forEach(function(p) { p.storage = 'local'; });
+      } catch(e) { localPhotos = []; }
+
       if (db) {
         db.collection('gallery').orderBy('createdAt', 'desc').limit(100).get()
           .then(function(snapshot) {
-            galleryPhotos = [];
-            snapshot.forEach(function(doc) { var d = doc.data(); d.id = doc.id; galleryPhotos.push(d); });
-            mergeLocalGallery();
+            snapshot.forEach(function(doc) {
+              var d = doc.data();
+              d.id = doc.id;
+              d.storage = 'cloud';
+              firebasePhotos.push(d);
+            });
+            galleryPhotos = firebasePhotos.concat(localPhotos);
             showGallery();
           })
           .catch(function(err) {
             console.warn('[Gallery] Firestore error:', err);
-            loadLocalOnly();
+            galleryPhotos = localPhotos;
             showGallery();
           });
       } else {
-        loadLocalOnly();
+        galleryPhotos = localPhotos;
         showGallery();
       }
     }
 
-    function loadLocalOnly() {
-      try { galleryPhotos = JSON.parse(localStorage.getItem('pb_gallery') || '[]'); } catch(e) { galleryPhotos = []; }
-    }
-
-    function mergeLocalGallery() {
-      try {
-        var local = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
-        local.forEach(function(entry) {
-          if (!galleryPhotos.some(function(p) { return p.imageData && p.imageData === entry.imageData; }))
-            galleryPhotos.push(entry);
-        });
-      } catch(e) {}
-    }
-
     function showGallery() {
       document.getElementById('galleryLoading').style.display = 'none';
-      document.getElementById('galleryCount').textContent = galleryPhotos.length + ' photo' + (galleryPhotos.length !== 1 ? 's' : '');
 
-      if (galleryPhotos.length === 0) {
+      var cloudCount = galleryPhotos.filter(function(p) { return p.storage === 'cloud'; }).length;
+      var localCount = galleryPhotos.filter(function(p) { return p.storage === 'local'; }).length;
+      var total = galleryPhotos.length;
+
+      var countText = total + ' photo' + (total !== 1 ? 's' : '');
+      var parts = [];
+      if (cloudCount > 0) parts.push(cloudCount + ' cloud');
+      if (localCount > 0) parts.push(localCount + ' local');
+      if (parts.length > 0) countText += ' (' + parts.join(', ') + ')';
+      document.getElementById('galleryCount').textContent = countText;
+
+      if (total === 0) {
         document.getElementById('galleryEmpty').style.display = 'flex';
         document.getElementById('galleryGrid').style.display = 'none';
         return;
@@ -145,23 +155,70 @@
             date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           } catch(e) {}
         }
+
+        var isCloud = photo.storage === 'cloud';
+        var badgeClass = isCloud ? 'storage-badge-cloud' : 'storage-badge-local';
+        var badgeIcon = isCloud ? 'cloud' : 'smartphone';
+        var badgeText = isCloud ? 'Cloud' : 'Local';
+
         var card = document.createElement('div');
         card.className = 'gallery-card';
-        card.onclick = function() { openLightbox(idx); };
         card.innerHTML =
-          '<div class="gallery-card-img"><img src="' + photo.imageData + '" alt="Photo" loading="lazy"></div>' +
+          '<div class="gallery-card-img" onclick="openLightbox(' + idx + ')">' +
+            '<img src="' + photo.imageData + '" alt="Photo" loading="lazy">' +
+            '<span class="storage-badge ' + badgeClass + '"><span class="material-icons-round">' + badgeIcon + '</span> ' + badgeText + '</span>' +
+          '</div>' +
           '<div class="gallery-card-info">' +
-            '<span class="gallery-card-user">' + (photo.userName || 'Guest') + '</span>' +
-            '<span class="gallery-card-date">' + date + '</span>' +
+            '<div class="gallery-card-left">' +
+              '<span class="gallery-card-user">' + (photo.userName || 'Guest') + '</span>' +
+              '<span class="gallery-card-date">' + date + '</span>' +
+            '</div>' +
+            '<button class="gallery-delete-btn" onclick="deletePhoto(' + idx + ')" title="Delete">' +
+              '<span class="material-icons-round">delete_outline</span>' +
+            '</button>' +
           '</div>';
         grid.appendChild(card);
       });
     }
 
+    // ─── Delete ─────────────────────────────────────────────
+
+    function deletePhoto(idx) {
+      var photo = galleryPhotos[idx];
+      if (!photo) return;
+      if (!confirm('Delete this photo? This cannot be undone.')) return;
+
+      if (photo.storage === 'cloud' && photo.id && db) {
+        db.collection('gallery').doc(photo.id).delete()
+          .then(function() {
+            console.log('[Gallery] Deleted from Firebase:', photo.id);
+            galleryPhotos.splice(idx, 1);
+            showGallery();
+          })
+          .catch(function(err) {
+            console.error('[Gallery] Delete failed:', err);
+            alert('Failed to delete from cloud. Try again.');
+          });
+      } else if (photo.storage === 'local') {
+        try {
+          var local = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
+          for (var i = 0; i < local.length; i++) {
+            if (local[i].imageData === photo.imageData) { local.splice(i, 1); break; }
+          }
+          localStorage.setItem('pb_gallery', JSON.stringify(local));
+        } catch(e) {}
+        galleryPhotos.splice(idx, 1);
+        showGallery();
+      }
+    }
+
+    // ─── Lightbox ───────────────────────────────────────────
+
     function openLightbox(idx) {
       currentLightboxIdx = idx;
       var photo = galleryPhotos[idx];
       document.getElementById('lightboxImg').src = photo.imageData;
+
       var date = '';
       if (photo.createdAt) {
         try {
@@ -169,10 +226,18 @@
           date = d.toLocaleString('en-US', { month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
         } catch(e) {}
       }
+
+      var isCloud = photo.storage === 'cloud';
+      var storageHTML = isCloud
+        ? '<span class="lightbox-storage lightbox-storage-cloud"><span class="material-icons-round">cloud</span> Cloud</span>'
+        : '<span class="lightbox-storage lightbox-storage-local"><span class="material-icons-round">smartphone</span> Local</span>';
+
       document.getElementById('lightboxMeta').innerHTML =
         '<strong>' + (photo.userName || 'Guest') + '</strong>' +
-        (photo.eventTitle ? ' · ' + photo.eventTitle : '') +
+        (photo.eventTitle ? ' &middot; ' + photo.eventTitle : '') +
+        ' &middot; ' + storageHTML +
         (date ? '<br><small>' + date + '</small>' : '');
+
       document.getElementById('lightboxOverlay').style.display = 'flex';
     }
 
@@ -188,6 +253,13 @@
       a.download = 'photobooth_' + Date.now() + '.png';
       a.href = photo.imageData;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function deleteLightboxPhoto() {
+      if (currentLightboxIdx < 0) return;
+      var idx = currentLightboxIdx;
+      closeLightbox();
+      deletePhoto(idx);
     }
 
     document.addEventListener('keydown', function(e) {

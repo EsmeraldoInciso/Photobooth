@@ -262,8 +262,23 @@ input:checked + .slider::before { transform: translateX(20px); }
 .gallery-card-img { aspect-ratio: 2 / 3; overflow: hidden; background: var(--bg); }
 .gallery-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gallery-card-info { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
+.gallery-card-left { display: flex; flex-direction: column; gap: 1px; }
 .gallery-card-user { font-size: 0.78rem; font-weight: 500; color: var(--text); }
 .gallery-card-date { font-size: 0.72rem; color: var(--text-dim); }
+.gallery-card-img { position: relative; }
+.storage-badge { position: absolute; top: 8px; right: 8px; display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.3px; backdrop-filter: blur(8px); }
+.storage-badge .material-icons-round { font-size: 12px; }
+.storage-badge-cloud { background: rgba(124, 106, 239, 0.85); color: #fff; }
+.storage-badge-local { background: rgba(255, 187, 36, 0.85); color: #1a1a1a; }
+.gallery-delete-btn { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-dim); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.gallery-delete-btn:hover { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+.gallery-delete-btn .material-icons-round { font-size: 18px; }
+.lightbox-delete-btn { color: var(--danger) !important; border-color: rgba(248, 113, 113, 0.3) !important; }
+.lightbox-delete-btn:hover { background: rgba(248, 113, 113, 0.15) !important; }
+.lightbox-storage { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; vertical-align: middle; }
+.lightbox-storage .material-icons-round { font-size: 12px; }
+.lightbox-storage-cloud { background: rgba(124, 106, 239, 0.3); color: var(--primary-light); }
+.lightbox-storage-local { background: rgba(255, 187, 36, 0.3); color: #FBBF24; }
 
 /* ════ LIGHTBOX ════ */
 .lightbox-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(12px); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
