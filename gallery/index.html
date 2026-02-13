@@ -38,7 +38,6 @@
     </header>
 
     <main class="main-content">
-      <!-- Gallery Stats -->
       <div class="gallery-header">
         <div class="gallery-stats">
           <span class="material-icons-round">photo_library</span>
@@ -46,35 +45,33 @@
         </div>
       </div>
 
-      <!-- Loading -->
-      <div class="gallery-loading" id="galleryLoading">
+      <!-- States: only one visible at a time -->
+      <div id="galleryLoading" class="gallery-loading">
         <div class="splash-spinner" style="margin:40px auto;"></div>
         <p style="text-align:center;color:#8585A8;">Loading gallery...</p>
       </div>
 
-      <!-- Empty state -->
-      <div class="gallery-empty" id="galleryEmpty" style="display:none;">
+      <div id="galleryEmpty" class="gallery-empty" style="display:none;">
         <span class="material-icons-round" style="font-size:64px;color:#28284A;">photo_library</span>
         <h3>No photos yet</h3>
         <p>Photos will appear here after they're captured and approved.</p>
         <a href="../" class="btn btn-primary"><span class="material-icons-round">camera</span> Take Photos</a>
       </div>
 
-      <!-- Gallery Grid -->
-      <div class="gallery-grid" id="galleryGrid" style="display:none;"></div>
+      <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
     </main>
   </div>
 
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox">
+  <!-- Lightbox — completely separate, hidden by default -->
+  <div class="lightbox-overlay" id="lightboxOverlay" style="display:none;">
     <button class="lightbox-close" onclick="closeLightbox()"><span class="material-icons-round">close</span></button>
-    <div class="lightbox-body">
+    <div class="lightbox-center">
       <img id="lightboxImg" src="" alt="Photo">
     </div>
-    <div class="lightbox-actions">
-      <button class="btn btn-outline" onclick="downloadLightboxPhoto()"><span class="material-icons-round">download</span> Download</button>
+    <div class="lightbox-bottom">
+      <button class="btn btn-outline lightbox-btn" onclick="downloadLightboxPhoto()"><span class="material-icons-round">download</span> Download</button>
+      <div class="lightbox-meta" id="lightboxMeta"></div>
     </div>
-    <div class="lightbox-meta" id="lightboxMeta"></div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -92,134 +89,109 @@
     }
 
     function loadGallery() {
-      var loadingEl = document.getElementById('galleryLoading');
-      var emptyEl = document.getElementById('galleryEmpty');
-      var gridEl = document.getElementById('galleryGrid');
-      var countEl = document.getElementById('galleryCount');
-
-      // Try Firestore first
       if (db) {
-        db.collection('gallery')
-          .orderBy('createdAt', 'desc')
-          .limit(100)
-          .get()
+        db.collection('gallery').orderBy('createdAt', 'desc').limit(100).get()
           .then(function(snapshot) {
             galleryPhotos = [];
-            snapshot.forEach(function(doc) {
-              var data = doc.data();
-              data.id = doc.id;
-              galleryPhotos.push(data);
-            });
-
-            // Merge local gallery entries
+            snapshot.forEach(function(doc) { var d = doc.data(); d.id = doc.id; galleryPhotos.push(d); });
             mergeLocalGallery();
-            renderGallery(loadingEl, emptyEl, gridEl, countEl);
+            showGallery();
           })
           .catch(function(err) {
-            console.warn('[Gallery] Firestore failed:', err);
-            loadLocalGallery();
-            renderGallery(loadingEl, emptyEl, gridEl, countEl);
+            console.warn('[Gallery] Firestore error:', err);
+            loadLocalOnly();
+            showGallery();
           });
       } else {
-        loadLocalGallery();
-        renderGallery(loadingEl, emptyEl, gridEl, countEl);
+        loadLocalOnly();
+        showGallery();
       }
     }
 
-    function loadLocalGallery() {
-      try {
-        galleryPhotos = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
-      } catch (e) {
-        galleryPhotos = [];
-      }
+    function loadLocalOnly() {
+      try { galleryPhotos = JSON.parse(localStorage.getItem('pb_gallery') || '[]'); } catch(e) { galleryPhotos = []; }
     }
 
     function mergeLocalGallery() {
       try {
         var local = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
-        // Add local entries that aren't in Firestore
         local.forEach(function(entry) {
-          var exists = galleryPhotos.some(function(p) {
-            return p.imageData === entry.imageData;
-          });
-          if (!exists) galleryPhotos.push(entry);
+          if (!galleryPhotos.some(function(p) { return p.imageData && p.imageData === entry.imageData; }))
+            galleryPhotos.push(entry);
         });
-      } catch (e) {}
+      } catch(e) {}
     }
 
-    function renderGallery(loadingEl, emptyEl, gridEl, countEl) {
-      loadingEl.style.display = 'none';
+    function showGallery() {
+      document.getElementById('galleryLoading').style.display = 'none';
+      document.getElementById('galleryCount').textContent = galleryPhotos.length + ' photo' + (galleryPhotos.length !== 1 ? 's' : '');
 
       if (galleryPhotos.length === 0) {
-        emptyEl.style.display = 'flex';
-        gridEl.style.display = 'none';
-        countEl.textContent = '0 photos';
+        document.getElementById('galleryEmpty').style.display = 'flex';
+        document.getElementById('galleryGrid').style.display = 'none';
         return;
       }
 
-      countEl.textContent = galleryPhotos.length + ' photo' + (galleryPhotos.length !== 1 ? 's' : '');
-      emptyEl.style.display = 'none';
-      gridEl.style.display = 'grid';
-      gridEl.innerHTML = '';
+      document.getElementById('galleryEmpty').style.display = 'none';
+      var grid = document.getElementById('galleryGrid');
+      grid.style.display = 'grid';
+      grid.innerHTML = '';
 
       galleryPhotos.forEach(function(photo, idx) {
+        var date = '';
+        if (photo.createdAt) {
+          try {
+            var d = photo.createdAt.toDate ? photo.createdAt.toDate() : new Date(photo.createdAt);
+            date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          } catch(e) {}
+        }
         var card = document.createElement('div');
         card.className = 'gallery-card';
         card.onclick = function() { openLightbox(idx); };
-
-        var date = '';
-        if (photo.createdAt) {
-          var d = photo.createdAt.toDate ? photo.createdAt.toDate() : new Date(photo.createdAt);
-          date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-
         card.innerHTML =
           '<div class="gallery-card-img"><img src="' + photo.imageData + '" alt="Photo" loading="lazy"></div>' +
           '<div class="gallery-card-info">' +
             '<span class="gallery-card-user">' + (photo.userName || 'Guest') + '</span>' +
             '<span class="gallery-card-date">' + date + '</span>' +
           '</div>';
-
-        gridEl.appendChild(card);
+        grid.appendChild(card);
       });
     }
 
-    // Lightbox
     function openLightbox(idx) {
       currentLightboxIdx = idx;
       var photo = galleryPhotos[idx];
       document.getElementById('lightboxImg').src = photo.imageData;
-
       var date = '';
       if (photo.createdAt) {
-        var d = photo.createdAt.toDate ? photo.createdAt.toDate() : new Date(photo.createdAt);
-        date = d.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        try {
+          var d = photo.createdAt.toDate ? photo.createdAt.toDate() : new Date(photo.createdAt);
+          date = d.toLocaleString('en-US', { month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        } catch(e) {}
       }
       document.getElementById('lightboxMeta').innerHTML =
         '<strong>' + (photo.userName || 'Guest') + '</strong>' +
-        (photo.eventTitle ? ' &middot; ' + photo.eventTitle : '') +
+        (photo.eventTitle ? ' · ' + photo.eventTitle : '') +
         (date ? '<br><small>' + date + '</small>' : '');
-
-      document.getElementById('lightbox').classList.add('active');
+      document.getElementById('lightboxOverlay').style.display = 'flex';
     }
 
     function closeLightbox() {
-      document.getElementById('lightbox').classList.remove('active');
+      document.getElementById('lightboxOverlay').style.display = 'none';
+      currentLightboxIdx = -1;
     }
 
     function downloadLightboxPhoto() {
       if (currentLightboxIdx < 0) return;
       var photo = galleryPhotos[currentLightboxIdx];
-      var link = document.createElement('a');
-      link.download = 'photobooth_' + Date.now() + '.png';
-      link.href = photo.imageData;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      var a = document.createElement('a');
+      a.download = 'photobooth_' + Date.now() + '.png';
+      a.href = photo.imageData;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
-    // Keyboard nav
     document.addEventListener('keydown', function(e) {
-      if (!document.getElementById('lightbox').classList.contains('active')) return;
-      if (e.key === 'Escape') closeLightbox();
+      if (document.getElementById('lightboxOverlay').style.display === 'flex' && e.key === 'Escape') closeLightbox();
     });
   </script>
 </body>

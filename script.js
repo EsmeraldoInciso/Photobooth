@@ -1,11 +1,8 @@
 /* ════════════════════════════════════════
-   PHOTO BOOTH v3 — Enhanced Features
-   Retake, QR, Gallery, Kiosk Mode
+   PHOTO BOOTH v3 — Enhanced
    ════════════════════════════════════════ */
 
 'use strict';
-
-// ─── Print Sizes at 300 DPI ─────────────────────────────────────
 
 const DPI = 300;
 const SIZES = {
@@ -14,98 +11,24 @@ const SIZES = {
   '4x6L': { w: 6 * DPI, h: 4 * DPI,  label: '4×6" L' },
 };
 
-// ─── Layout Definitions ─────────────────────────────────────────
-
 const LAYOUTS = [
-  {
-    id: '2x6_3', name: '2×6 Classic', desc: '3 Photos', size: '2x6',
-    shots: 3, miniCols: 1, miniRows: 3,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.05, gap = cw * 0.03, slotW = cw - pad * 2;
-      var top = ch * 0.82, slotH = (top - pad - gap * 2) / 3, slots = [];
-      for (var i = 0; i < 3; i++) slots.push({ x: pad, y: pad + i * (slotH + gap), w: slotW, h: slotH });
-      return slots;
-    }
-  },
-  {
-    id: '2x6_4', name: '2×6 Strip', desc: '4 Photos', size: '2x6',
-    shots: 4, miniCols: 1, miniRows: 4,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.05, gap = cw * 0.025, slotW = cw - pad * 2;
-      var top = ch * 0.85, slotH = (top - pad - gap * 3) / 4, slots = [];
-      for (var i = 0; i < 4; i++) slots.push({ x: pad, y: pad + i * (slotH + gap), w: slotW, h: slotH });
-      return slots;
-    }
-  },
-  {
-    id: '4x6_single', name: '4×6 Single', desc: '1 Photo', size: '4x6',
-    shots: 1, miniCols: 1, miniRows: 1,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.04;
-      return [{ x: pad, y: pad, w: cw - pad * 2, h: ch * 0.88 - pad }];
-    }
-  },
-  {
-    id: '4x6_3', name: '4×6 Triple', desc: '3 Photos', size: '4x6',
-    shots: 3, miniCols: 1, miniRows: 3,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.04, gap = cw * 0.02, slotW = cw - pad * 2;
-      var top = ch * 0.85, slotH = (top - pad - gap * 2) / 3, slots = [];
-      for (var i = 0; i < 3; i++) slots.push({ x: pad, y: pad + i * (slotH + gap), w: slotW, h: slotH });
-      return slots;
-    }
-  },
-  {
-    id: '4x6_4grid', name: '4×6 Grid', desc: '4 Photos', size: '4x6',
-    shots: 4, miniCols: 2, miniRows: 2,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.04, gap = cw * 0.02, slotW = (cw - pad * 2 - gap) / 2;
-      var top = ch * 0.82, slotH = (top - pad - gap) / 2, slots = [];
-      for (var r = 0; r < 2; r++) for (var c = 0; c < 2; c++)
-        slots.push({ x: pad + c * (slotW + gap), y: pad + r * (slotH + gap), w: slotW, h: slotH });
-      return slots;
-    }
-  },
-  {
-    id: '4x6_collage', name: '4×6 Collage', desc: '3 Photos', size: '4x6',
-    shots: 3, miniCols: 2, miniRows: 2,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.04, gap = cw * 0.02;
-      var areaH = ch * 0.82 - pad, topH = areaH * 0.55, botH = areaH * 0.45 - gap;
-      var halfW = (cw - pad * 2 - gap) / 2;
-      return [
-        { x: pad, y: pad, w: cw - pad * 2, h: topH },
-        { x: pad, y: pad + topH + gap, w: halfW, h: botH },
-        { x: pad + halfW + gap, y: pad + topH + gap, w: halfW, h: botH }
-      ];
-    }
-  },
-  {
-    id: '4x6L_2up', name: '4×6 Landscape', desc: '2 Photos', size: '4x6L',
-    shots: 2, miniCols: 2, miniRows: 1,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.03, gap = cw * 0.02, slotW = (cw - pad * 2 - gap) / 2;
-      var slotH = ch * 0.78 - pad;
-      return [
-        { x: pad, y: pad, w: slotW, h: slotH },
-        { x: pad + slotW + gap, y: pad, w: slotW, h: slotH }
-      ];
-    }
-  },
-  {
-    id: '4x6_6grid', name: '4×6 Six-Up', desc: '6 Photos', size: '4x6',
-    shots: 6, miniCols: 2, miniRows: 3,
-    getSlots: function(cw, ch) {
-      var pad = cw * 0.03, gap = cw * 0.02, slotW = (cw - pad * 2 - gap) / 2;
-      var top = ch * 0.85, slotH = (top - pad - gap * 2) / 3, slots = [];
-      for (var r = 0; r < 3; r++) for (var c = 0; c < 2; c++)
-        slots.push({ x: pad + c * (slotW + gap), y: pad + r * (slotH + gap), w: slotW, h: slotH });
-      return slots;
-    }
-  },
+  { id: '2x6_3', name: '2×6 Classic', desc: '3 Photos', size: '2x6', shots: 3, miniCols: 1, miniRows: 3,
+    getSlots: function(cw, ch) { var pad=cw*0.05,gap=cw*0.03,slotW=cw-pad*2,top=ch*0.82,slotH=(top-pad-gap*2)/3,s=[]; for(var i=0;i<3;i++) s.push({x:pad,y:pad+i*(slotH+gap),w:slotW,h:slotH}); return s; } },
+  { id: '2x6_4', name: '2×6 Strip', desc: '4 Photos', size: '2x6', shots: 4, miniCols: 1, miniRows: 4,
+    getSlots: function(cw, ch) { var pad=cw*0.05,gap=cw*0.025,slotW=cw-pad*2,top=ch*0.85,slotH=(top-pad-gap*3)/4,s=[]; for(var i=0;i<4;i++) s.push({x:pad,y:pad+i*(slotH+gap),w:slotW,h:slotH}); return s; } },
+  { id: '4x6_single', name: '4×6 Single', desc: '1 Photo', size: '4x6', shots: 1, miniCols: 1, miniRows: 1,
+    getSlots: function(cw, ch) { var pad=cw*0.04; return [{x:pad,y:pad,w:cw-pad*2,h:ch*0.88-pad}]; } },
+  { id: '4x6_3', name: '4×6 Triple', desc: '3 Photos', size: '4x6', shots: 3, miniCols: 1, miniRows: 3,
+    getSlots: function(cw, ch) { var pad=cw*0.04,gap=cw*0.02,slotW=cw-pad*2,top=ch*0.85,slotH=(top-pad-gap*2)/3,s=[]; for(var i=0;i<3;i++) s.push({x:pad,y:pad+i*(slotH+gap),w:slotW,h:slotH}); return s; } },
+  { id: '4x6_4grid', name: '4×6 Grid', desc: '4 Photos', size: '4x6', shots: 4, miniCols: 2, miniRows: 2,
+    getSlots: function(cw, ch) { var pad=cw*0.04,gap=cw*0.02,slotW=(cw-pad*2-gap)/2,top=ch*0.82,slotH=(top-pad-gap)/2,s=[]; for(var r=0;r<2;r++) for(var c=0;c<2;c++) s.push({x:pad+c*(slotW+gap),y:pad+r*(slotH+gap),w:slotW,h:slotH}); return s; } },
+  { id: '4x6_collage', name: '4×6 Collage', desc: '3 Photos', size: '4x6', shots: 3, miniCols: 2, miniRows: 2,
+    getSlots: function(cw, ch) { var pad=cw*0.04,gap=cw*0.02,aH=ch*0.82-pad,tH=aH*0.55,bH=aH*0.45-gap,hW=(cw-pad*2-gap)/2; return [{x:pad,y:pad,w:cw-pad*2,h:tH},{x:pad,y:pad+tH+gap,w:hW,h:bH},{x:pad+hW+gap,y:pad+tH+gap,w:hW,h:bH}]; } },
+  { id: '4x6L_2up', name: '4×6 Landscape', desc: '2 Photos', size: '4x6L', shots: 2, miniCols: 2, miniRows: 1,
+    getSlots: function(cw, ch) { var pad=cw*0.03,gap=cw*0.02,slotW=(cw-pad*2-gap)/2,slotH=ch*0.78-pad; return [{x:pad,y:pad,w:slotW,h:slotH},{x:pad+slotW+gap,y:pad,w:slotW,h:slotH}]; } },
+  { id: '4x6_6grid', name: '4×6 Six-Up', desc: '6 Photos', size: '4x6', shots: 6, miniCols: 2, miniRows: 3,
+    getSlots: function(cw, ch) { var pad=cw*0.03,gap=cw*0.02,slotW=(cw-pad*2-gap)/2,top=ch*0.85,slotH=(top-pad-gap*2)/3,s=[]; for(var r=0;r<3;r++) for(var c=0;c<2;c++) s.push({x:pad+c*(slotW+gap),y:pad+r*(slotH+gap),w:slotW,h:slotH}); return s; } },
 ];
-
-// ─── Frame & Filter Definitions ─────────────────────────────────
 
 var FRAMES = [
   { id: 'none',     name: 'None' },
@@ -120,60 +43,41 @@ var FRAMES = [
 ];
 
 var FILTERS = [
-  { id: 'none',  name: 'Normal', css: 'none',                                              color: '#888' },
-  { id: 'bw',    name: 'B&W',    css: 'grayscale(100%)',                                   color: '#555' },
-  { id: 'sepia', name: 'Sepia',  css: 'sepia(80%)',                                        color: '#8B7355' },
-  { id: 'warm',  name: 'Warm',   css: 'saturate(130%) hue-rotate(-10deg)',                 color: '#D4886B' },
+  { id: 'none',  name: 'Normal', css: 'none', color: '#888' },
+  { id: 'bw',    name: 'B&W',    css: 'grayscale(100%)', color: '#555' },
+  { id: 'sepia', name: 'Sepia',  css: 'sepia(80%)', color: '#8B7355' },
+  { id: 'warm',  name: 'Warm',   css: 'saturate(130%) hue-rotate(-10deg)', color: '#D4886B' },
   { id: 'cool',  name: 'Cool',   css: 'saturate(110%) hue-rotate(20deg) brightness(1.05)', color: '#6B8DD4' },
-  { id: 'vivid', name: 'Vivid',  css: 'saturate(180%) contrast(110%)',                     color: '#E84393' },
-  { id: 'fade',  name: 'Fade',   css: 'contrast(90%) brightness(110%) saturate(80%)',      color: '#B0A8A8' },
-  { id: 'noir',  name: 'Noir',   css: 'grayscale(100%) contrast(140%) brightness(90%)',    color: '#333' },
+  { id: 'vivid', name: 'Vivid',  css: 'saturate(180%) contrast(110%)', color: '#E84393' },
+  { id: 'fade',  name: 'Fade',   css: 'contrast(90%) brightness(110%) saturate(80%)', color: '#B0A8A8' },
+  { id: 'noir',  name: 'Noir',   css: 'grayscale(100%) contrast(140%) brightness(90%)', color: '#333' },
 ];
 
-// ─── App State ──────────────────────────────────────────────────
+// ─── State ──────────────────────────────────────────────────────
 
 var state = {
-  stream: null,
-  cameraReady: false,
-  facingMode: 'user',
-  timerSeconds: 0,
-  selectedLayout: '2x6_3',
-  selectedFrame: 'white',
-  selectedFilter: 'none',
-  capturedPhotos: [],
-  isCapturing: false,
-  currentShot: 0,
-  boothComplete: false,
-  retakeIndex: -1,            // NEW: index of slot being retaken (-1 = normal)
-  kioskMode: false,           // NEW: kiosk mode flag
-  kioskAutoResetMs: 30000,    // NEW: auto-reset after 30s of inactivity
-  kioskResetTimer: null,
+  stream: null, cameraReady: false, facingMode: 'user', timerSeconds: 0,
+  selectedLayout: '2x6_3', selectedFrame: 'white', selectedFilter: 'none',
+  capturedPhotos: [], isCapturing: false, currentShot: 0, boothComplete: false,
+  retakeIndex: -1,
+  kioskMode: false, kioskAutoResetMs: 30000, kioskResetTimer: null,
   settings: {
-    mirror: true,
-    flash: true,
-    sound: true,
-    eventTitle: '',
-    eventDate: '',
-    emailPublicKey: '',
-    emailServiceId: '',
-    emailTemplateId: '',
-    showQR: true,             // NEW: QR code on prints
-    saveToGallery: true,      // NEW: auto-save to gallery
+    mirror: true, flash: true, sound: true,
+    eventTitle: '', eventDate: '',
+    emailPublicKey: '', emailServiceId: '', emailTemplateId: '',
+    showQR: true, saveToGallery: true,
   }
 };
 
-// ─── Initialize ─────────────────────────────────────────────────
+// ─── Init ───────────────────────────────────────────────────────
 
 var boothInitialized = false;
 function initPhotoBooth() {
   if (boothInitialized) return;
   boothInitialized = true;
   loadSettings();
-  renderLayouts();
-  renderFrames();
-  renderFilters();
-  renderLivePreview();
-  startCamera();
+  renderLayouts(); renderFrames(); renderFilters();
+  renderLivePreview(); startCamera();
 }
 
 // ─── Camera ─────────────────────────────────────────────────────
@@ -181,64 +85,63 @@ function initPhotoBooth() {
 function startCamera() {
   if (state.stream) state.stream.getTracks().forEach(function(t) { t.stop(); });
   navigator.mediaDevices.getUserMedia({
-    video: { facingMode: state.facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
-    audio: false
+    video: { facingMode: state.facingMode, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false
   }).then(function(stream) {
     state.stream = stream;
-    var video = document.getElementById('video');
-    video.srcObject = stream;
-    return video.play();
+    var v = document.getElementById('video'); v.srcObject = stream; return v.play();
   }).then(function() {
     state.cameraReady = true;
     document.getElementById('cameraOff').classList.add('hidden');
   }).catch(function(err) {
-    console.error('Camera error:', err);
+    console.error('Camera:', err);
     document.getElementById('cameraOff').classList.remove('hidden');
   });
 }
 
-function flipCamera() {
-  state.facingMode = state.facingMode === 'user' ? 'environment' : 'user';
-  startCamera();
-}
+function flipCamera() { state.facingMode = state.facingMode === 'user' ? 'environment' : 'user'; startCamera(); }
 
 function cycleTimer() {
-  var timers = [0, 3, 5, 10];
-  var idx = timers.indexOf(state.timerSeconds);
-  state.timerSeconds = timers[(idx + 1) % timers.length];
+  var t = [0, 3, 5, 10], i = t.indexOf(state.timerSeconds);
+  state.timerSeconds = t[(i + 1) % t.length];
   document.getElementById('timerBadge').textContent = state.timerSeconds === 0 ? 'OFF' : state.timerSeconds + 's';
 }
 
-// ─── Capture Flow ───────────────────────────────────────────────
+// ─── Capture ────────────────────────────────────────────────────
 
 function startCapture() {
   if (!state.cameraReady || state.isCapturing) return;
   resetKioskTimer();
   var layout = findById(LAYOUTS, state.selectedLayout);
 
-  // If retaking a specific shot
+  // RETAKE: check FIRST before anything else
   if (state.retakeIndex >= 0) {
-    state.isCapturing = true;
-    document.getElementById('btnCapture').disabled = true;
     var idx = state.retakeIndex;
     state.retakeIndex = -1;
+    state.isCapturing = true;
+    document.getElementById('btnCapture').disabled = true;
+    clearStatus();
     updateShotCounter(idx + 1, layout.shots);
-    if (state.timerSeconds > 0) {
-      runCountdown(state.timerSeconds, function() {
-        doRetake(idx);
-        state.isCapturing = false;
-        document.getElementById('btnCapture').disabled = false;
-        document.getElementById('shotCounter').classList.remove('visible');
-      });
-    } else {
-      doRetake(idx);
+
+    function doTheRetake() {
+      state.capturedPhotos[idx] = captureFrame();
+      if (state.settings.flash) triggerFlash();
+      if (state.settings.sound) playShutter();
+      renderLivePreview();
       state.isCapturing = false;
       document.getElementById('btnCapture').disabled = false;
       document.getElementById('shotCounter').classList.remove('visible');
+      showReviewScreen();
+    }
+
+    if (state.timerSeconds > 0) {
+      runCountdown(state.timerSeconds, doTheRetake);
+    } else {
+      doTheRetake();
     }
     return;
   }
 
+  // Normal capture: reset if previous session complete
   if (state.boothComplete) resetBooth();
 
   state.isCapturing = true;
@@ -256,17 +159,13 @@ function captureSequence(i, total) {
     return;
   }
   state.currentShot = i + 1;
-  updateShotCounter(state.currentShot, total);
+  updateShotCounter(i + 1, total);
   var delay = i > 0 ? 600 : 0;
   setTimeout(function() {
     if (state.timerSeconds > 0) {
-      runCountdown(state.timerSeconds, function() {
-        doCapture();
-        setTimeout(function() { captureSequence(i + 1, total); }, 200);
-      });
+      runCountdown(state.timerSeconds, function() { doCapture(); setTimeout(function() { captureSequence(i+1, total); }, 200); });
     } else {
-      doCapture();
-      setTimeout(function() { captureSequence(i + 1, total); }, 200);
+      doCapture(); setTimeout(function() { captureSequence(i+1, total); }, 200);
     }
   }, delay);
 }
@@ -278,230 +177,275 @@ function doCapture() {
   renderLivePreview();
 }
 
-function doRetake(idx) {
-  state.capturedPhotos[idx] = captureFrame();
-  if (state.settings.flash) triggerFlash();
-  if (state.settings.sound) playShutter();
-  renderLivePreview();
-  showReviewScreen();
-}
-
 function captureFrame() {
   var video = document.getElementById('video');
-  var canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  var ctx = canvas.getContext('2d');
-  if (state.settings.mirror) { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-  var filter = findById(FILTERS, state.selectedFilter);
-  if (filter && filter.css !== 'none') ctx.filter = filter.css;
+  var c = document.createElement('canvas');
+  c.width = video.videoWidth; c.height = video.videoHeight;
+  var ctx = c.getContext('2d');
+  if (state.settings.mirror) { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
+  var f = findById(FILTERS, state.selectedFilter);
+  if (f && f.css !== 'none') ctx.filter = f.css;
   ctx.drawImage(video, 0, 0);
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.filter = 'none';
-  return canvas.toDataURL('image/png');
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.filter = 'none';
+  return c.toDataURL('image/png');
 }
 
-function updateShotCounter(current, total) {
+function updateShotCounter(cur, total) {
   var el = document.getElementById('shotCounter');
-  el.textContent = '\uD83D\uDCF8 ' + current + ' / ' + total;
+  el.textContent = '\uD83D\uDCF8 ' + cur + ' / ' + total;
   el.classList.add('visible');
 }
 
 // ═══════════════════════════════════════════════════════════════
-// REVIEW SCREEN — Approve / Retake individual shots
+// REVIEW SCREEN
 // ═══════════════════════════════════════════════════════════════
 
 function showReviewScreen() {
-  var layout = findById(LAYOUTS, state.selectedLayout);
   var grid = document.getElementById('reviewGrid');
   grid.innerHTML = '';
-
   state.capturedPhotos.forEach(function(photo, i) {
-    var item = document.createElement('div');
-    item.className = 'review-item';
-    item.innerHTML =
-      '<div class="review-img-wrap"><img src="' + photo + '" alt="Shot ' + (i + 1) + '"></div>' +
+    var div = document.createElement('div');
+    div.className = 'review-item';
+    div.innerHTML =
+      '<div class="review-img-wrap"><img src="' + photo + '" alt="Shot ' + (i+1) + '"></div>' +
       '<div class="review-item-controls">' +
-        '<span class="review-num">#' + (i + 1) + '</span>' +
-        '<button class="btn btn-xs btn-retake" onclick="initiateRetake(' + i + ')" title="Retake this shot">' +
-          '<span class="material-icons-round">replay</span> Retake</button>' +
+        '<span class="review-num">#' + (i+1) + '</span>' +
+        '<button class="btn-xs" onclick="initiateRetake(' + i + ')"><span class="material-icons-round">replay</span> Retake</button>' +
       '</div>';
-    grid.appendChild(item);
+    grid.appendChild(div);
   });
-
   document.getElementById('reviewModal').classList.add('active');
 }
 
 function initiateRetake(idx) {
   state.retakeIndex = idx;
   document.getElementById('reviewModal').classList.remove('active');
-  showStatus('Retaking shot #' + (idx + 1) + ' — press the capture button', 'info');
-  // Pulse the capture button
+  showStatus('Retaking shot #' + (idx + 1) + ' — press capture', 'info');
   var btn = document.getElementById('btnCapture');
+  btn.classList.remove('pulse-retake');
+  void btn.offsetWidth; // force reflow to restart animation
   btn.classList.add('pulse-retake');
-  setTimeout(function() { btn.classList.remove('pulse-retake'); }, 3000);
 }
 
 function approveAllPhotos() {
   document.getElementById('reviewModal').classList.remove('active');
   document.getElementById('previewActions').style.display = 'flex';
-  renderFinalCanvas(function() {
-    // Auto-save to gallery if enabled
-    if (state.settings.saveToGallery && typeof saveToGallery === 'function') {
-      saveToGallery();
-    }
+
+  // Render final canvas with all images loaded, THEN save
+  renderLivePreviewAsync(function() {
+    if (state.settings.showQR) drawQRBadge();
+    if (state.settings.saveToGallery) saveToGallery();
     startKioskTimer();
+    showStatus('Photos approved!', 'success');
   });
 }
 
-// ─── Render final canvas with optional QR ───────────────────────
+// ─── Async preview render (waits for all images to load) ────────
 
-function renderFinalCanvas(callback) {
-  renderLivePreview();
+function renderLivePreviewAsync(callback) {
+  var canvas = document.getElementById('livePreviewCanvas');
+  var ctx = canvas.getContext('2d');
+  var layout = findById(LAYOUTS, state.selectedLayout);
+  var frame = findById(FRAMES, state.selectedFrame);
+  var size = SIZES[layout.size];
 
-  if (state.settings.showQR) {
-    var canvas = document.getElementById('livePreviewCanvas');
-    var ctx = canvas.getContext('2d');
-    var layout = findById(LAYOUTS, state.selectedLayout);
-    var frame = findById(FRAMES, state.selectedFrame);
-    var bgColor = (frame && frame.id !== 'none') ? frame.bg : '#FFFFFF';
-    var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
+  canvas.width = size.w; canvas.height = size.h;
+  var bgColor = (frame && frame.id !== 'none') ? frame.bg : '#FFFFFF';
+  ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (frame && frame.filmHoles) drawFilmHoles(ctx, canvas.width, canvas.height);
 
-    // Generate QR using a small inline QR library approach
-    var qrData = window.location.origin + '/Photobooth/gallery/';
-    drawQRCode(ctx, qrData, canvas.width, canvas.height, isDark);
+  var slots = layout.getSlots(canvas.width, canvas.height);
+  var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
+
+  // Load ALL images first
+  var images = [];
+  var loaded = 0;
+  var toLoad = 0;
+
+  state.capturedPhotos.forEach(function(src, i) { if (src) toLoad++; });
+
+  if (toLoad === 0) {
+    drawAllPlaceholders(ctx, slots, isDark);
+    drawBranding(ctx, canvas.width, canvas.height, bgColor);
+    if (callback) callback();
+    return;
   }
 
-  if (callback) callback();
+  state.capturedPhotos.forEach(function(src, i) {
+    if (!src) { images[i] = null; return; }
+    var img = new Image();
+    img.onload = function() {
+      images[i] = img;
+      loaded++;
+      if (loaded >= toLoad) {
+        // All loaded — draw everything
+        for (var j = 0; j < slots.length; j++) {
+          if (images[j]) drawFittedImage(ctx, images[j], slots[j].x, slots[j].y, slots[j].w, slots[j].h);
+          else drawPlaceholder(ctx, slots[j], j, isDark);
+        }
+        drawBranding(ctx, canvas.width, canvas.height, bgColor);
+        if (frame && frame.accent) drawAccent(ctx, canvas.width, canvas.height, frame);
+        if (callback) callback();
+      }
+    };
+    img.onerror = function() {
+      images[i] = null;
+      loaded++;
+      if (loaded >= toLoad) {
+        for (var j = 0; j < slots.length; j++) {
+          if (images[j]) drawFittedImage(ctx, images[j], slots[j].x, slots[j].y, slots[j].w, slots[j].h);
+          else drawPlaceholder(ctx, slots[j], j, isDark);
+        }
+        drawBranding(ctx, canvas.width, canvas.height, bgColor);
+        if (callback) callback();
+      }
+    };
+    img.src = src;
+  });
 }
 
-// ─── Simple QR Code renderer (using canvas pattern) ─────────────
-// This generates a QR-like code. For real QR we'd need a library,
-// but we embed the data as a styled badge instead.
+// ─── QR badge on print ──────────────────────────────────────────
 
-function drawQRCode(ctx, data, cw, ch, isDark) {
-  // Draw a QR code using the qrcode-generator approach
-  // Since we can't import libraries at render time, we draw a stylized gallery link
-  var size = Math.min(cw, ch) * 0.09;
-  var x = cw - size - cw * 0.04;
-  var y = ch - size - ch * 0.03;
+function drawQRBadge() {
+  var canvas = document.getElementById('livePreviewCanvas');
+  var ctx = canvas.getContext('2d');
+  var cw = canvas.width, ch = canvas.height;
+  var frame = findById(FRAMES, state.selectedFrame);
+  var bgColor = (frame && frame.id !== 'none') ? frame.bg : '#FFFFFF';
+  var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
 
-  // QR-style box
+  var sz = Math.min(cw, ch) * 0.08;
+  var x = cw - sz - cw * 0.04;
+  var y = ch - sz - ch * 0.025;
+
+  // White bg
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(x - 4, y - 4, size + 8, size + 8);
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(x, y, size, size);
+  roundRect(ctx, x - 4, y - 4, sz + 8, sz + 20, 4);
+  ctx.fill();
 
-  // Inner pattern
-  var unit = size / 7;
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(x + unit, y + unit, unit * 5, unit * 5);
+  // QR-style pattern
   ctx.fillStyle = '#000000';
-  ctx.fillRect(x + unit * 2, y + unit * 2, unit * 3, unit * 3);
-
-  // Corner markers (simplified QR finder patterns)
-  drawFinderPattern(ctx, x, y, unit);
-  drawFinderPattern(ctx, x + unit * 4, y, unit);
-  drawFinderPattern(ctx, x, y + unit * 4, unit);
-
-  // Center dot
+  var u = sz / 7;
+  // Top-left finder
+  ctx.fillRect(x, y, u * 3, u * 3);
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x + u, y + u, u, u);
+  // Top-right finder
+  ctx.fillStyle = '#000000'; ctx.fillRect(x + u * 4, y, u * 3, u * 3);
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x + u * 5, y + u, u, u);
+  // Bottom-left finder
+  ctx.fillStyle = '#000000'; ctx.fillRect(x, y + u * 4, u * 3, u * 3);
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x + u, y + u * 5, u, u);
+  // Data dots
   ctx.fillStyle = '#000000';
-  ctx.fillRect(x + unit * 3, y + unit * 3, unit, unit);
+  ctx.fillRect(x + u * 3, y + u, u, u);
+  ctx.fillRect(x + u * 3, y + u * 3, u, u);
+  ctx.fillRect(x + u * 4, y + u * 4, u, u);
+  ctx.fillRect(x + u * 5, y + u * 5, u, u);
+  ctx.fillRect(x + u * 6, y + u * 4, u, u);
+  ctx.fillRect(x + u * 3, y + u * 5, u, u);
 
   // Label
-  ctx.fillStyle = isDark ? '#AAAAAA' : '#666666';
-  ctx.font = '600 ' + (cw * 0.018) + 'px "DM Sans", sans-serif';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'top';
-  ctx.fillText('Gallery', x + size + 4, y + size + 6);
+  ctx.fillStyle = '#666666';
+  ctx.font = '600 ' + (u * 1.2) + 'px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Gallery', x + sz / 2, y + sz + 12);
 }
 
-function drawFinderPattern(ctx, x, y, unit) {
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(x, y, unit * 3, unit);
-  ctx.fillRect(x, y, unit, unit * 3);
-  ctx.fillRect(x + unit * 2, y, unit, unit * 3);
-  ctx.fillRect(x, y + unit * 2, unit * 3, unit);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect(x + unit, y + unit, unit, unit);
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// GALLERY SAVE — Store to Firebase Storage / Firestore
+// GALLERY SAVE
 // ═══════════════════════════════════════════════════════════════
 
 function saveToGallery() {
-  if (!db) return;
   var canvas = document.getElementById('livePreviewCanvas');
   var imageData = canvas.toDataURL('image/jpeg', 0.85);
-
-  var user = firebase.auth().currentUser;
-  if (!user) return;
+  var user = null;
+  try { user = firebase.auth().currentUser; } catch(e) {}
 
   var entry = {
-    userId: user.uid,
-    userName: user.displayName || user.email.split('@')[0],
+    userId: user ? user.uid : 'anon',
+    userName: user ? (user.displayName || user.email.split('@')[0]) : 'Guest',
     eventTitle: state.settings.eventTitle || 'Photo Booth',
     eventDate: state.settings.eventDate || new Date().toLocaleDateString(),
     layout: state.selectedLayout,
     frame: state.selectedFrame,
     filter: state.selectedFilter,
     imageData: imageData,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    createdAt: null
   };
 
-  db.collection('gallery').add(entry)
-    .then(function(doc) {
-      console.log('[Gallery] Saved:', doc.id);
-      showStatus('Saved to gallery!', 'success');
-    })
-    .catch(function(err) {
-      console.warn('[Gallery] Save failed:', err);
-      // Save locally as fallback
-      saveToLocalGallery(entry);
-      showStatus('Saved locally (offline)', 'info');
-    });
+  // Try Firestore
+  if (typeof db !== 'undefined' && db) {
+    entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    db.collection('gallery').add(entry)
+      .then(function(doc) { console.log('[Gallery] Saved:', doc.id); })
+      .catch(function(err) {
+        console.warn('[Gallery] Firestore failed, saving locally:', err);
+        entry.createdAt = new Date().toISOString();
+        saveLocalGallery(entry);
+      });
+  } else {
+    entry.createdAt = new Date().toISOString();
+    saveLocalGallery(entry);
+  }
 }
 
-function saveToLocalGallery(entry) {
+function saveLocalGallery(entry) {
   try {
-    var gallery = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
-    entry.createdAt = new Date().toISOString();
-    gallery.unshift(entry);
-    if (gallery.length > 50) gallery = gallery.slice(0, 50);
-    localStorage.setItem('pb_gallery', JSON.stringify(gallery));
-  } catch (e) {}
+    var g = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
+    g.unshift(entry);
+    if (g.length > 50) g = g.slice(0, 50);
+    localStorage.setItem('pb_gallery', JSON.stringify(g));
+  } catch(e) { console.warn('[Gallery] Local save failed:', e); }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// KIOSK MODE — Fullscreen, auto-reset, event-ready
+// KIOSK MODE
 // ═══════════════════════════════════════════════════════════════
 
 function toggleKiosk() {
   state.kioskMode = !state.kioskMode;
-  var el = document.documentElement;
 
   if (state.kioskMode) {
-    // Enter fullscreen
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if (el.msRequestFullscreen) el.msRequestFullscreen();
-
-    document.body.classList.add('kiosk-mode');
-    showStatus('Kiosk mode ON — auto-resets after ' + (state.kioskAutoResetMs / 1000) + 's', 'info');
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (req) {
+      req.call(el).then(function() {
+        document.body.classList.add('kiosk-mode');
+        showStatus('Kiosk mode ON', 'info');
+      }).catch(function(err) {
+        console.warn('Fullscreen failed:', err);
+        // Still enter kiosk mode visually even if fullscreen fails
+        document.body.classList.add('kiosk-mode');
+        showStatus('Kiosk mode ON (fullscreen blocked by browser)', 'info');
+      });
+    } else {
+      document.body.classList.add('kiosk-mode');
+      showStatus('Kiosk mode ON', 'info');
+    }
     startKioskTimer();
   } else {
-    if (document.exitFullscreen) document.exitFullscreen();
-    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-
+    var exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (exitFS && document.fullscreenElement) {
+      try { exitFS.call(document); } catch(e) {}
+    }
     document.body.classList.remove('kiosk-mode');
     clearKioskTimer();
     showStatus('Kiosk mode OFF', 'info');
   }
-  updateKioskButton();
+  updateKioskBtn();
 }
 
-function updateKioskButton() {
+function updateKioskBtn() {
   var btn = document.getElementById('btnKiosk');
   if (btn) {
     btn.querySelector('.material-icons-round').textContent = state.kioskMode ? 'fullscreen_exit' : 'fullscreen';
@@ -519,30 +463,21 @@ function startKioskTimer() {
 }
 
 function clearKioskTimer() {
-  if (state.kioskResetTimer) {
-    clearTimeout(state.kioskResetTimer);
-    state.kioskResetTimer = null;
-  }
+  if (state.kioskResetTimer) { clearTimeout(state.kioskResetTimer); state.kioskResetTimer = null; }
 }
 
-function resetKioskTimer() {
-  if (state.kioskMode) {
-    clearKioskTimer();
-  }
-}
+function resetKioskTimer() { if (state.kioskMode) clearKioskTimer(); }
 
-// Listen for fullscreen exit
 document.addEventListener('fullscreenchange', function() {
   if (!document.fullscreenElement && state.kioskMode) {
     state.kioskMode = false;
     document.body.classList.remove('kiosk-mode');
-    clearKioskTimer();
-    updateKioskButton();
+    clearKioskTimer(); updateKioskBtn();
   }
 });
 
 // ═══════════════════════════════════════════════════════════════
-// LIVE PREVIEW RENDERER
+// LIVE PREVIEW (sync — for during-capture display)
 // ═══════════════════════════════════════════════════════════════
 
 function renderLivePreview() {
@@ -552,22 +487,18 @@ function renderLivePreview() {
   var frame = findById(FRAMES, state.selectedFrame);
   var size = SIZES[layout.size];
 
-  canvas.width = size.w;
-  canvas.height = size.h;
-
+  canvas.width = size.w; canvas.height = size.h;
   var bgColor = (frame && frame.id !== 'none') ? frame.bg : '#FFFFFF';
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+  var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
+  ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (frame && frame.filmHoles) drawFilmHoles(ctx, canvas.width, canvas.height);
 
   var slots = layout.getSlots(canvas.width, canvas.height);
-  var photosToLoad = 0, photosLoaded = 0;
+  var toLoad = 0, loaded = 0;
+  for (var i = 0; i < slots.length; i++) if (state.capturedPhotos[i]) toLoad++;
 
-  for (var i = 0; i < slots.length; i++) if (state.capturedPhotos[i]) photosToLoad++;
-
-  if (photosToLoad === 0) {
-    drawAllPlaceholders(ctx, slots, bgColor);
+  if (toLoad === 0) {
+    drawAllPlaceholders(ctx, slots, isDark);
     drawBranding(ctx, canvas.width, canvas.height, bgColor);
     if (frame && frame.accent) drawAccent(ctx, canvas.width, canvas.height, frame);
     return;
@@ -579,9 +510,11 @@ function renderLivePreview() {
         var img = new Image();
         img.onload = function() {
           drawFittedImage(ctx, img, slots[idx].x, slots[idx].y, slots[idx].w, slots[idx].h);
-          photosLoaded++;
-          if (photosLoaded >= photosToLoad) {
-            drawEmptyPlaceholders(ctx, slots, bgColor);
+          loaded++;
+          if (loaded >= toLoad) {
+            for (var k = 0; k < slots.length; k++) {
+              if (!state.capturedPhotos[k]) drawPlaceholder(ctx, slots[k], k, isDark);
+            }
             drawBranding(ctx, canvas.width, canvas.height, bgColor);
             if (frame && frame.accent) drawAccent(ctx, canvas.width, canvas.height, frame);
           }
@@ -592,16 +525,10 @@ function renderLivePreview() {
   }
 }
 
-function drawAllPlaceholders(ctx, slots, bgColor) {
-  var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
-  for (var i = 0; i < slots.length; i++) drawPlaceholder(ctx, slots[i], i, isDark);
-}
+// ─── Drawing helpers ────────────────────────────────────────────
 
-function drawEmptyPlaceholders(ctx, slots, bgColor) {
-  var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
-  for (var i = 0; i < slots.length; i++) {
-    if (!state.capturedPhotos[i]) drawPlaceholder(ctx, slots[i], i, isDark);
-  }
+function drawAllPlaceholders(ctx, slots, isDark) {
+  for (var i = 0; i < slots.length; i++) drawPlaceholder(ctx, slots[i], i, isDark);
 }
 
 function drawPlaceholder(ctx, s, idx, isDark) {
@@ -617,40 +544,38 @@ function drawBranding(ctx, cw, ch, bgColor) {
   var isDark = bgColor === '#1A1A1A' || bgColor === '#111111';
   var textColor = isDark ? '#FFFFFF' : '#333333';
   var mutedColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
-  var brandY = ch * 0.88, centerX = cw / 2;
-
+  var brandY = ch * 0.88, cx = cw / 2;
   if (state.settings.eventTitle) {
     ctx.fillStyle = textColor;
     ctx.font = '600 ' + (cw * 0.045) + 'px "Playfair Display", Georgia, serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(state.settings.eventTitle, centerX, brandY);
+    ctx.fillText(state.settings.eventTitle, cx, brandY);
   }
   if (state.settings.eventDate) {
     ctx.fillStyle = mutedColor;
     ctx.font = '400 ' + (cw * 0.03) + 'px "DM Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(state.settings.eventDate, centerX, brandY + cw * 0.06);
+    ctx.fillText(state.settings.eventDate, cx, brandY + cw * 0.06);
   }
   if (!state.settings.eventTitle && !state.settings.eventDate) {
     ctx.fillStyle = mutedColor;
     ctx.font = '400 ' + (cw * 0.028) + 'px "DM Sans", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('\uD83D\uDCF8 Photo Booth', centerX, brandY + cw * 0.02);
+    ctx.fillText('\uD83D\uDCF8 Photo Booth', cx, brandY + cw * 0.02);
   }
 }
 
 function drawAccent(ctx, cw, ch, frame) {
   ctx.strokeStyle = frame.accent; ctx.lineWidth = 3;
-  var pad = cw * 0.06;
-  ctx.strokeRect(pad, pad, cw - pad * 2, ch - pad * 2);
+  var p = cw * 0.06; ctx.strokeRect(p, p, cw - p * 2, ch - p * 2);
 }
 
 function drawFilmHoles(ctx, w, h) {
-  var holeR = w * 0.025, pad = w * 0.05, gap = holeR * 4;
+  var r = w * 0.025, pad = w * 0.05, gap = r * 4;
   ctx.fillStyle = '#333';
   for (var y = pad; y < h - pad; y += gap) {
-    ctx.beginPath(); ctx.arc(pad * 0.6, y, holeR, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(w - pad * 0.6, y, holeR, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(pad * 0.6, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(w - pad * 0.6, y, r, 0, Math.PI * 2); ctx.fill();
   }
 }
 
@@ -659,66 +584,50 @@ function drawFilmHoles(ctx, w, h) {
 // ═══════════════════════════════════════════════════════════════
 
 function renderLayouts() {
-  var grid = document.getElementById('layoutGrid');
-  var html = '';
+  var g = document.getElementById('layoutGrid'), h = '';
   LAYOUTS.forEach(function(l) {
-    var size = SIZES[l.size], isVert = size.h > size.w;
-    var miniW = isVert ? 28 : 44, miniH = isVert ? 50 : 30;
-    var cellW = l.miniCols > 1 ? (miniW - 4) / l.miniCols : miniW - 4;
-    var cellH = l.miniRows > 1 ? (miniH - 4) / l.miniRows : miniH - 4;
-    var divs = '';
-    for (var i = 0; i < Math.min(l.shots, l.miniCols * l.miniRows); i++)
-      divs += '<div style="width:' + cellW + 'px;height:' + cellH + 'px;"></div>';
-    html += '<div class="layout-card' + (l.id === state.selectedLayout ? ' active' : '') + '" onclick="selectLayout(\'' + l.id + '\')">' +
-      '<div class="layout-mini" style="width:' + miniW + 'px;height:' + miniH + 'px;display:grid;grid-template-columns:repeat(' + l.miniCols + ',1fr);grid-template-rows:repeat(' + l.miniRows + ',1fr);gap:2px;padding:2px;">' +
-      divs + '</div><span class="lbl">' + SIZES[l.size].label + '</span><span class="lname">' + l.name + '</span></div>';
-  });
-  grid.innerHTML = html;
+    var sz = SIZES[l.size], v = sz.h > sz.w, mW = v ? 28 : 44, mH = v ? 50 : 30;
+    var cW = l.miniCols > 1 ? (mW-4)/l.miniCols : mW-4, cH = l.miniRows > 1 ? (mH-4)/l.miniRows : mH-4;
+    var d = ''; for (var i=0; i<Math.min(l.shots,l.miniCols*l.miniRows); i++) d += '<div style="width:'+cW+'px;height:'+cH+'px;"></div>';
+    h += '<div class="layout-card'+(l.id===state.selectedLayout?' active':'')+'" onclick="selectLayout(\''+l.id+'\')">' +
+      '<div class="layout-mini" style="width:'+mW+'px;height:'+mH+'px;display:grid;grid-template-columns:repeat('+l.miniCols+',1fr);grid-template-rows:repeat('+l.miniRows+',1fr);gap:2px;padding:2px;">' +
+      d+'</div><span class="lbl">'+SIZES[l.size].label+'</span><span class="lname">'+l.name+'</span></div>';
+  }); g.innerHTML = h;
 }
 
 function renderFrames() {
-  var grid = document.getElementById('frameGrid'); var html = '';
+  var g = document.getElementById('frameGrid'), h = '';
   FRAMES.forEach(function(f) {
     var bg = f.bg || 'transparent', inner = f.id === 'none' ? '✕' : '';
-    var borderStyle = f.filmHoles ? '2px solid #333' : '2px solid ' + bg;
-    html += '<div class="frame-card' + (f.id === state.selectedFrame ? ' active' : '') + '" onclick="selectFrame(\'' + f.id + '\')">' +
-      '<div style="width:36px;height:28px;background:' + bg + ';border:' + borderStyle + ';border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#8585A8;">' + inner + '</div>' +
-      '<span>' + f.name + '</span></div>';
-  });
-  grid.innerHTML = html;
+    var bs = f.filmHoles ? '2px solid #333' : '2px solid ' + bg;
+    h += '<div class="frame-card'+(f.id===state.selectedFrame?' active':'')+'" onclick="selectFrame(\''+f.id+'\')">' +
+      '<div style="width:36px;height:28px;background:'+bg+';border:'+bs+';border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#8585A8;">'+inner+'</div>' +
+      '<span>'+f.name+'</span></div>';
+  }); g.innerHTML = h;
 }
 
 function renderFilters() {
-  var grid = document.getElementById('filterGrid'); var html = '';
+  var g = document.getElementById('filterGrid'), h = '';
   FILTERS.forEach(function(f) {
-    html += '<div class="filter-card' + (f.id === state.selectedFilter ? ' active' : '') + '" onclick="selectFilter(\'' + f.id + '\')">' +
-      '<div class="filter-swatch" style="background:' + f.color + ';"></div>' +
-      '<span class="filter-name">' + f.name + '</span></div>';
-  });
-  grid.innerHTML = html;
+    h += '<div class="filter-card'+(f.id===state.selectedFilter?' active':'')+'" onclick="selectFilter(\''+f.id+'\')">' +
+      '<div class="filter-swatch" style="background:'+f.color+';"></div><span class="filter-name">'+f.name+'</span></div>';
+  }); g.innerHTML = h;
 }
-
-// ─── Selection Handlers ─────────────────────────────────────────
 
 function selectLayout(id) {
   if (state.isCapturing) return;
-  var prev = state.selectedLayout; state.selectedLayout = id;
-  renderLayouts();
+  var prev = state.selectedLayout; state.selectedLayout = id; renderLayouts();
   if (prev !== id) {
     state.capturedPhotos = []; state.boothComplete = false; state.retakeIndex = -1;
-    document.getElementById('previewActions').style.display = 'none';
-    clearStatus();
+    document.getElementById('previewActions').style.display = 'none'; clearStatus();
   }
   renderLivePreview();
 }
-
 function selectFrame(id) { state.selectedFrame = id; renderFrames(); renderLivePreview(); }
-
 function selectFilter(id) {
   state.selectedFilter = id; renderFilters();
-  var video = document.getElementById('video');
-  var filter = findById(FILTERS, id);
-  video.style.filter = (filter && filter.css !== 'none') ? filter.css : 'none';
+  var v = document.getElementById('video'), f = findById(FILTERS, id);
+  v.style.filter = (f && f.css !== 'none') ? f.css : 'none';
 }
 
 // ─── Actions ────────────────────────────────────────────────────
@@ -735,26 +644,21 @@ function resetBooth() {
 function downloadPhoto() {
   var canvas = document.getElementById('livePreviewCanvas');
   var layout = findById(LAYOUTS, state.selectedLayout);
-  var link = document.createElement('a');
-  link.download = 'photobooth_' + layout.size + '_' + Date.now() + '.png';
-  link.href = canvas.toDataURL('image/png');
-  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  var a = document.createElement('a');
+  a.download = 'photobooth_' + layout.size + '_' + Date.now() + '.png';
+  a.href = canvas.toDataURL('image/png');
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 function printPhoto() {
   var canvas = document.getElementById('livePreviewCanvas');
   var dataUrl = canvas.toDataURL('image/png');
   var layout = findById(LAYOUTS, state.selectedLayout);
-  var size = SIZES[layout.size];
-  var pw = size.w / DPI, ph = size.h / DPI;
+  var size = SIZES[layout.size], pw = size.w/DPI, ph = size.h/DPI;
   var pf = document.getElementById('printFrame');
   var doc = pf.contentDocument || pf.contentWindow.document;
   doc.open();
-  doc.write('<!DOCTYPE html><html><head><style>' +
-    '@page{size:' + pw + 'in ' + ph + 'in;margin:0}' +
-    '*{margin:0;padding:0}body{width:' + pw + 'in;height:' + ph + 'in;display:flex;align-items:center;justify-content:center}' +
-    'img{width:' + pw + 'in;height:' + ph + 'in;object-fit:contain}' +
-    '</style></head><body><img src="' + dataUrl + '" onload="setTimeout(function(){window.print()},300)"></body></html>');
+  doc.write('<!DOCTYPE html><html><head><style>@page{size:'+pw+'in '+ph+'in;margin:0}*{margin:0;padding:0}body{width:'+pw+'in;height:'+ph+'in;display:flex;align-items:center;justify-content:center}img{width:'+pw+'in;height:'+ph+'in;object-fit:contain}</style></head><body><img src="'+dataUrl+'" onload="setTimeout(function(){window.print()},300)"></body></html>');
   doc.close();
 }
 
@@ -766,30 +670,23 @@ function closeEmailModal() { document.getElementById('emailModal').classList.rem
 function sendEmail() {
   var name = document.getElementById('recipientName').value.trim();
   var email = document.getElementById('recipientEmail').value.trim();
-  var statusEl = document.getElementById('emailStatus');
-  if (!name) { statusEl.textContent = 'Please enter your name.'; statusEl.className = 'email-status err'; return; }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { statusEl.textContent = 'Please enter a valid email.'; statusEl.className = 'email-status err'; return; }
+  var st = document.getElementById('emailStatus');
+  if (!name) { st.textContent = 'Please enter your name.'; st.className = 'email-status err'; return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = 'Please enter a valid email.'; st.className = 'email-status err'; return; }
   var s = state.settings;
-  if (!s.emailPublicKey || !s.emailServiceId || !s.emailTemplateId) { statusEl.textContent = 'EmailJS not configured. Go to Settings.'; statusEl.className = 'email-status err'; return; }
-
-  statusEl.textContent = 'Sending...'; statusEl.className = 'email-status sending';
+  if (!s.emailPublicKey || !s.emailServiceId || !s.emailTemplateId) { st.textContent = 'EmailJS not configured. Go to Settings.'; st.className = 'email-status err'; return; }
+  st.textContent = 'Sending...'; st.className = 'email-status sending';
   document.getElementById('btnSendEmail').disabled = true;
-
-  var canvas = document.getElementById('livePreviewCanvas');
   emailjs.init(s.emailPublicKey);
   emailjs.send(s.emailServiceId, s.emailTemplateId, {
-    to_name: name, to_email: email,
-    from_name: s.eventTitle || 'Photo Booth',
-    event_name: s.eventTitle || 'Photo Booth',
-    event_date: s.eventDate || new Date().toLocaleDateString(),
-    message: 'Here is your photo from ' + (s.eventTitle || 'the Photo Booth') + '!',
-    image: canvas.toDataURL('image/png')
+    to_name: name, to_email: email, from_name: s.eventTitle || 'Photo Booth',
+    event_name: s.eventTitle || 'Photo Booth', event_date: s.eventDate || new Date().toLocaleDateString(),
+    message: 'Here is your photo!', image: document.getElementById('livePreviewCanvas').toDataURL('image/png')
   }).then(function() {
-    statusEl.textContent = '\u2705 Sent to ' + email + '!'; statusEl.className = 'email-status sent';
+    st.textContent = '\u2705 Sent to ' + email + '!'; st.className = 'email-status sent';
     document.getElementById('btnSendEmail').disabled = false;
-  }).catch(function(err) {
-    console.error('EmailJS:', err);
-    statusEl.textContent = '\u274C Failed. Check EmailJS config.'; statusEl.className = 'email-status err';
+  }).catch(function() {
+    st.textContent = '\u274C Failed. Check EmailJS config.'; st.className = 'email-status err';
     document.getElementById('btnSendEmail').disabled = false;
   });
 }
@@ -809,96 +706,51 @@ function updateSettings() {
   state.settings.emailTemplateId = document.getElementById('settingEmailTemplateId').value.trim();
   state.settings.showQR = document.getElementById('settingShowQR').checked;
   state.settings.saveToGallery = document.getElementById('settingSaveGallery').checked;
-
-  var video = document.getElementById('video');
-  video.classList.toggle('no-mirror', !state.settings.mirror);
+  document.getElementById('video').classList.toggle('no-mirror', !state.settings.mirror);
   saveSettings(); renderLivePreview();
 }
 
-function saveSettings() {
-  try { localStorage.setItem('photobooth_settings', JSON.stringify(state.settings)); } catch (e) {}
-}
+function saveSettings() { try { localStorage.setItem('photobooth_settings', JSON.stringify(state.settings)); } catch(e) {} }
 
 function loadSettings() {
   try {
     var saved = localStorage.getItem('photobooth_settings');
-    if (saved) {
-      var p = JSON.parse(saved);
-      Object.keys(p).forEach(function(k) { if (state.settings.hasOwnProperty(k)) state.settings[k] = p[k]; });
-    }
-  } catch (e) {}
-
-  // Sync UI
-  var fields = {
-    settingMirror: 'mirror', settingFlash: 'flash', settingSound: 'sound',
-    settingTitle: 'eventTitle', settingDate: 'eventDate',
-    settingEmailPublicKey: 'emailPublicKey', settingEmailServiceId: 'emailServiceId',
-    settingEmailTemplateId: 'emailTemplateId', settingShowQR: 'showQR', settingSaveGallery: 'saveToGallery'
-  };
-  Object.keys(fields).forEach(function(elId) {
-    var el = document.getElementById(elId);
-    if (!el) return;
-    var val = state.settings[fields[elId]];
-    if (el.type === 'checkbox') el.checked = val;
-    else el.value = val || '';
+    if (saved) { var p = JSON.parse(saved); Object.keys(p).forEach(function(k) { if (state.settings.hasOwnProperty(k)) state.settings[k] = p[k]; }); }
+  } catch(e) {}
+  var map = {settingMirror:'mirror',settingFlash:'flash',settingSound:'sound',settingTitle:'eventTitle',settingDate:'eventDate',settingEmailPublicKey:'emailPublicKey',settingEmailServiceId:'emailServiceId',settingEmailTemplateId:'emailTemplateId',settingShowQR:'showQR',settingSaveGallery:'saveToGallery'};
+  Object.keys(map).forEach(function(id) {
+    var el = document.getElementById(id); if (!el) return;
+    var v = state.settings[map[id]];
+    if (el.type === 'checkbox') el.checked = v; else el.value = v || '';
   });
 }
 
-// ─── Countdown & Effects ────────────────────────────────────────
+// ─── Effects ────────────────────────────────────────────────────
 
-function runCountdown(seconds, callback) {
-  var overlay = document.getElementById('countdownOverlay');
-  var number = document.getElementById('countdownNumber');
-  overlay.classList.add('active');
-  var count = seconds;
-  number.textContent = count;
-  var interval = setInterval(function() {
-    count--;
-    if (count <= 0) { clearInterval(interval); overlay.classList.remove('active'); callback(); }
-    else number.textContent = count;
-  }, 1000);
+function runCountdown(sec, cb) {
+  var ov = document.getElementById('countdownOverlay'), num = document.getElementById('countdownNumber');
+  ov.classList.add('active'); var c = sec; num.textContent = c;
+  var iv = setInterval(function() { c--; if (c <= 0) { clearInterval(iv); ov.classList.remove('active'); cb(); } else num.textContent = c; }, 1000);
 }
-
-function triggerFlash() {
-  var f = document.getElementById('flashOverlay');
-  f.classList.add('flash'); setTimeout(function() { f.classList.remove('flash'); }, 150);
-}
-
+function triggerFlash() { var f = document.getElementById('flashOverlay'); f.classList.add('flash'); setTimeout(function() { f.classList.remove('flash'); }, 150); }
 function playShutter() {
   try {
-    var ac = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = ac.createOscillator(), gain = ac.createGain();
-    osc.connect(gain); gain.connect(ac.destination);
-    osc.frequency.setValueAtTime(800, ac.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.3, ac.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.08);
+    var ac = new (window.AudioContext || window.webkitAudioContext)(), osc = ac.createOscillator(), g = ac.createGain();
+    osc.connect(g); g.connect(ac.destination);
+    osc.frequency.setValueAtTime(800, ac.currentTime); osc.frequency.exponentialRampToValueAtTime(200, ac.currentTime + 0.08);
+    g.gain.setValueAtTime(0.3, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.08);
     osc.start(); osc.stop(ac.currentTime + 0.1);
-  } catch (e) {}
+  } catch(e) {}
 }
 
 // ─── Utilities ──────────────────────────────────────────────────
 
-function findById(arr, id) {
-  for (var i = 0; i < arr.length; i++) if (arr[i].id === id) return arr[i];
-  return null;
-}
-
+function findById(a, id) { for (var i = 0; i < a.length; i++) if (a[i].id === id) return a[i]; return null; }
 function drawFittedImage(ctx, img, x, y, w, h) {
-  var imgR = img.width / img.height, slotR = w / h;
-  var sx, sy, sw, sh;
-  if (imgR > slotR) { sh = img.height; sw = sh * slotR; sx = (img.width - sw) / 2; sy = 0; }
-  else { sw = img.width; sh = sw / slotR; sx = 0; sy = (img.height - sh) / 2; }
+  var ir = img.width/img.height, sr = w/h, sx, sy, sw, sh;
+  if (ir > sr) { sh = img.height; sw = sh * sr; sx = (img.width - sw) / 2; sy = 0; }
+  else { sw = img.width; sh = sw / sr; sx = 0; sy = (img.height - sh) / 2; }
   ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
-
-function showStatus(msg, type) {
-  var el = document.getElementById('statusMsg');
-  el.textContent = msg;
-  el.className = 'status-msg ' + (type || '');
-}
-
-function clearStatus() {
-  var el = document.getElementById('statusMsg');
-  if (el) { el.textContent = ''; el.className = 'status-msg'; }
-}
+function showStatus(msg, type) { var el = document.getElementById('statusMsg'); el.textContent = msg; el.className = 'status-msg ' + (type || ''); }
+function clearStatus() { var el = document.getElementById('statusMsg'); if (el) { el.textContent = ''; el.className = 'status-msg'; } }
