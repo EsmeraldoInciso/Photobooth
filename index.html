@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photo Booth</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
-  <!-- Inline splash styles — loads before anything else -->
   <style>
     #splashScreen{position:fixed;inset:0;z-index:9999;background:#0C0C18;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
     .splash-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
@@ -25,16 +24,8 @@
 </head>
 <body>
 
-  <!-- Splash — visible immediately, hidden by auth.js -->
-  <div id="splashScreen">
-    <div class="splash-inner">
-      <div class="splash-emoji">📸</div>
-      <h1 class="splash-title">Photo Booth</h1>
-      <div class="splash-spinner"></div>
-    </div>
-  </div>
+  <div id="splashScreen"><div class="splash-inner"><div class="splash-emoji">📸</div><h1 class="splash-title">Photo Booth</h1><div class="splash-spinner"></div></div></div>
 
-  <!-- App — hidden until auth confirms login -->
   <div id="pageContent" style="display:none;">
     <header class="app-header">
       <div class="header-left">
@@ -46,6 +37,8 @@
           <span class="user-name" id="userName"></span>
           <img class="user-avatar" id="userAvatar" src="" alt="">
         </div>
+        <button class="icon-btn" id="btnKiosk" onclick="toggleKiosk()" title="Kiosk Mode"><span class="material-icons-round">fullscreen</span></button>
+        <a class="icon-btn" href="gallery/" title="Gallery"><span class="material-icons-round">photo_library</span></a>
         <a class="icon-btn" href="profile/" title="Profile"><span class="material-icons-round">person</span></a>
         <button class="icon-btn" onclick="toggleSettings()" title="Settings"><span class="material-icons-round">tune</span></button>
         <button class="icon-btn" onclick="handleLogout()" title="Sign Out"><span class="material-icons-round">logout</span></button>
@@ -60,8 +53,7 @@
             <div class="countdown-overlay" id="countdownOverlay"><span id="countdownNumber"></span></div>
             <div class="flash-overlay" id="flashOverlay"></div>
             <div class="camera-off" id="cameraOff">
-              <span class="material-icons-round">videocam_off</span>
-              <p>Camera is off</p>
+              <span class="material-icons-round">videocam_off</span><p>Camera is off</p>
               <button class="btn btn-primary" onclick="startCamera()"><span class="material-icons-round">videocam</span> Start Camera</button>
             </div>
             <div class="shot-counter" id="shotCounter"></div>
@@ -69,10 +61,7 @@
           <div class="camera-controls">
             <button class="ctrl-btn" onclick="flipCamera()" title="Flip"><span class="material-icons-round">flip_camera_ios</span></button>
             <button class="capture-btn" id="btnCapture" onclick="startCapture()" title="Capture"><span class="material-icons-round">camera</span></button>
-            <button class="ctrl-btn" onclick="cycleTimer()" title="Timer">
-              <span class="material-icons-round">timer</span>
-              <span class="timer-badge" id="timerBadge">OFF</span>
-            </button>
+            <button class="ctrl-btn" onclick="cycleTimer()" title="Timer"><span class="material-icons-round">timer</span><span class="timer-badge" id="timerBadge">OFF</span></button>
           </div>
         </div>
         <div class="preview-panel" id="previewPanel">
@@ -82,6 +71,7 @@
             <button class="btn btn-sm btn-outline" onclick="resetBooth()"><span class="material-icons-round">replay</span> Reset</button>
             <button class="btn btn-sm btn-outline" onclick="downloadPhoto()"><span class="material-icons-round">download</span> Download</button>
             <button class="btn btn-sm btn-outline" onclick="printPhoto()"><span class="material-icons-round">print</span> Print</button>
+            <button class="btn btn-sm btn-outline" onclick="showReviewScreen()"><span class="material-icons-round">edit</span> Retake</button>
             <button class="btn btn-sm btn-primary" onclick="openEmailModal()"><span class="material-icons-round">email</span> Email</button>
           </div>
           <div class="status-msg" id="statusMsg"></div>
@@ -93,10 +83,28 @@
     </main>
   </div>
 
+  <!-- Review Modal -->
+  <div class="modal-backdrop" id="reviewModal">
+    <div class="modal-content review-modal">
+      <div class="modal-header">
+        <h2>Review Photos</h2>
+        <button class="icon-btn" onclick="document.getElementById('reviewModal').classList.remove('active')"><span class="material-icons-round">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Tap <b>Retake</b> on any photo to re-shoot it, or approve all to finalize.</p>
+        <div class="review-grid" id="reviewGrid"></div>
+        <div class="form-actions" style="margin-top:16px;">
+          <button class="btn btn-outline" onclick="resetBooth()"><span class="material-icons-round">replay</span> Start Over</button>
+          <button class="btn btn-primary" onclick="approveAllPhotos()"><span class="material-icons-round">check</span> Approve All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Email Modal -->
   <div class="modal-backdrop" id="emailModal">
     <div class="modal-content email-modal">
-      <div class="modal-header"><h2>Send Photo via Email</h2><button class="icon-btn" onclick="closeEmailModal()"><span class="material-icons-round">close</span></button></div>
+      <div class="modal-header"><h2>Send Photo</h2><button class="icon-btn" onclick="closeEmailModal()"><span class="material-icons-round">close</span></button></div>
       <div class="modal-body">
         <p class="modal-desc">Enter your email to receive this photo.</p>
         <div class="form-group"><label>Your Name</label><input type="text" id="recipientName" placeholder="Juan Dela Cruz" maxlength="60"></div>
@@ -118,8 +126,14 @@
         <div class="setting-row"><label>Mirror Camera</label><label class="switch"><input type="checkbox" id="settingMirror" checked onchange="updateSettings()"><span class="slider"></span></label></div>
         <div class="setting-row"><label>Flash Effect</label><label class="switch"><input type="checkbox" id="settingFlash" checked onchange="updateSettings()"><span class="slider"></span></label></div>
         <div class="setting-row"><label>Shutter Sound</label><label class="switch"><input type="checkbox" id="settingSound" checked onchange="updateSettings()"><span class="slider"></span></label></div>
-        <div class="setting-row"><label>Event Title</label><input type="text" id="settingTitle" placeholder="e.g. Wedding" maxlength="50" onchange="updateSettings()"></div>
-        <div class="setting-row"><label>Event Date</label><input type="text" id="settingDate" placeholder="e.g. Feb 14, 2025" maxlength="30" onchange="updateSettings()"></div>
+        <hr class="setting-divider">
+        <h4 class="setting-section-title">Event</h4>
+        <div class="setting-row"><label>Title</label><input type="text" id="settingTitle" placeholder="e.g. Wedding" maxlength="50" onchange="updateSettings()"></div>
+        <div class="setting-row"><label>Date</label><input type="text" id="settingDate" placeholder="e.g. Feb 14, 2025" maxlength="30" onchange="updateSettings()"></div>
+        <hr class="setting-divider">
+        <h4 class="setting-section-title">Features</h4>
+        <div class="setting-row"><label>QR Code on Prints</label><label class="switch"><input type="checkbox" id="settingShowQR" checked onchange="updateSettings()"><span class="slider"></span></label></div>
+        <div class="setting-row"><label>Auto-save to Gallery</label><label class="switch"><input type="checkbox" id="settingSaveGallery" checked onchange="updateSettings()"><span class="slider"></span></label></div>
         <hr class="setting-divider">
         <h4 class="setting-section-title">EmailJS</h4>
         <p class="setting-hint"><a href="https://www.emailjs.com/" target="_blank">emailjs.com</a></p>
@@ -132,7 +146,6 @@
 
   <iframe id="printFrame" style="position:absolute;left:-9999px;top:-9999px;width:0;height:0;border:none;"></iframe>
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -143,8 +156,7 @@
       if (!user) return;
       document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
       var av = document.getElementById('userAvatar');
-      if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; }
-      else { av.style.display = 'none'; }
+      if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; } else av.style.display = 'none';
       initPhotoBooth();
     }
   </script>
