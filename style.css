@@ -917,9 +917,8 @@ input:checked + .slider::before {
   gap: 12px;
 }
 
-.splash-icon {
+.splash-emoji {
   font-size: 56px;
-  color: var(--accent);
   animation: splashPulse 1.5s ease-in-out infinite;
 }
 

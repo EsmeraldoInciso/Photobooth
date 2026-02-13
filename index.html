@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photo Booth</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
+  <!-- Inline splash styles — loads before anything else -->
+  <style>
+    #splashScreen{position:fixed;inset:0;z-index:9999;background:#0C0C18;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+    .splash-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+    .splash-emoji{font-size:56px;animation:sp 1.5s ease-in-out infinite}
+    .splash-title{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#B4A7FF,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .splash-spinner{width:28px;height:28px;border:3px solid #28284A;border-top-color:#FF6B9D;border-radius:50%;animation:spin .8s linear infinite;margin-top:8px}
+    @keyframes sp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -15,56 +25,50 @@
 </head>
 <body>
 
+  <!-- Splash — visible immediately, hidden by auth.js -->
+  <div id="splashScreen">
+    <div class="splash-inner">
+      <div class="splash-emoji">📸</div>
+      <h1 class="splash-title">Photo Booth</h1>
+      <div class="splash-spinner"></div>
+    </div>
+  </div>
+
+  <!-- App — hidden until auth confirms login -->
   <div id="pageContent" style="display:none;">
-    <!-- Header -->
     <header class="app-header">
       <div class="header-left">
         <span class="material-icons-round logo-icon">photo_camera</span>
         <h1>Photo Booth</h1>
       </div>
       <div class="header-right">
-        <div class="user-info" id="userInfo">
+        <div class="user-info">
           <span class="user-name" id="userName"></span>
           <img class="user-avatar" id="userAvatar" src="" alt="">
         </div>
-        <a class="icon-btn" href="profile/" title="Profile">
-          <span class="material-icons-round">person</span>
-        </a>
-        <button class="icon-btn" onclick="toggleSettings()" title="Settings">
-          <span class="material-icons-round">tune</span>
-        </button>
-        <button class="icon-btn" onclick="handleLogout().then(function(){})" title="Sign Out">
-          <span class="material-icons-round">logout</span>
-        </button>
+        <a class="icon-btn" href="profile/" title="Profile"><span class="material-icons-round">person</span></a>
+        <button class="icon-btn" onclick="toggleSettings()" title="Settings"><span class="material-icons-round">tune</span></button>
+        <button class="icon-btn" onclick="handleLogout()" title="Sign Out"><span class="material-icons-round">logout</span></button>
       </div>
     </header>
 
-    <!-- Main -->
     <main class="main-content">
       <div class="booth-area">
         <div class="camera-panel">
           <div class="camera-container" id="cameraContainer">
             <video id="video" autoplay playsinline muted></video>
-            <div class="countdown-overlay" id="countdownOverlay">
-              <span id="countdownNumber"></span>
-            </div>
+            <div class="countdown-overlay" id="countdownOverlay"><span id="countdownNumber"></span></div>
             <div class="flash-overlay" id="flashOverlay"></div>
             <div class="camera-off" id="cameraOff">
               <span class="material-icons-round">videocam_off</span>
               <p>Camera is off</p>
-              <button class="btn btn-primary" onclick="startCamera()">
-                <span class="material-icons-round">videocam</span> Start Camera
-              </button>
+              <button class="btn btn-primary" onclick="startCamera()"><span class="material-icons-round">videocam</span> Start Camera</button>
             </div>
             <div class="shot-counter" id="shotCounter"></div>
           </div>
           <div class="camera-controls">
-            <button class="ctrl-btn" onclick="flipCamera()" title="Flip">
-              <span class="material-icons-round">flip_camera_ios</span>
-            </button>
-            <button class="capture-btn" id="btnCapture" onclick="startCapture()" title="Capture">
-              <span class="material-icons-round">camera</span>
-            </button>
+            <button class="ctrl-btn" onclick="flipCamera()" title="Flip"><span class="material-icons-round">flip_camera_ios</span></button>
+            <button class="capture-btn" id="btnCapture" onclick="startCapture()" title="Capture"><span class="material-icons-round">camera</span></button>
             <button class="ctrl-btn" onclick="cycleTimer()" title="Timer">
               <span class="material-icons-round">timer</span>
               <span class="timer-badge" id="timerBadge">OFF</span>
@@ -72,67 +76,34 @@
           </div>
         </div>
         <div class="preview-panel" id="previewPanel">
-          <div class="preview-label">
-            <span class="material-icons-round">preview</span> Live Preview
-          </div>
-          <div class="preview-strip-wrap">
-            <canvas id="livePreviewCanvas"></canvas>
-          </div>
+          <div class="preview-label"><span class="material-icons-round">preview</span> Live Preview</div>
+          <div class="preview-strip-wrap"><canvas id="livePreviewCanvas"></canvas></div>
           <div class="preview-actions" id="previewActions" style="display:none;">
-            <button class="btn btn-sm btn-outline" onclick="resetBooth()">
-              <span class="material-icons-round">replay</span> Reset
-            </button>
-            <button class="btn btn-sm btn-outline" onclick="downloadPhoto()">
-              <span class="material-icons-round">download</span> Download
-            </button>
-            <button class="btn btn-sm btn-outline" onclick="printPhoto()">
-              <span class="material-icons-round">print</span> Print
-            </button>
-            <button class="btn btn-sm btn-primary" onclick="openEmailModal()">
-              <span class="material-icons-round">email</span> Email
-            </button>
+            <button class="btn btn-sm btn-outline" onclick="resetBooth()"><span class="material-icons-round">replay</span> Reset</button>
+            <button class="btn btn-sm btn-outline" onclick="downloadPhoto()"><span class="material-icons-round">download</span> Download</button>
+            <button class="btn btn-sm btn-outline" onclick="printPhoto()"><span class="material-icons-round">print</span> Print</button>
+            <button class="btn btn-sm btn-primary" onclick="openEmailModal()"><span class="material-icons-round">email</span> Email</button>
           </div>
           <div class="status-msg" id="statusMsg"></div>
         </div>
       </div>
-
-      <section class="option-section">
-        <h3><span class="material-icons-round">grid_view</span> Layout</h3>
-        <div class="option-scroll" id="layoutGrid"></div>
-      </section>
-      <section class="option-section">
-        <h3><span class="material-icons-round">filter_frames</span> Frame</h3>
-        <div class="option-scroll" id="frameGrid"></div>
-      </section>
-      <section class="option-section">
-        <h3><span class="material-icons-round">auto_awesome</span> Filter</h3>
-        <div class="option-scroll" id="filterGrid"></div>
-      </section>
+      <section class="option-section"><h3><span class="material-icons-round">grid_view</span> Layout</h3><div class="option-scroll" id="layoutGrid"></div></section>
+      <section class="option-section"><h3><span class="material-icons-round">filter_frames</span> Frame</h3><div class="option-scroll" id="frameGrid"></div></section>
+      <section class="option-section"><h3><span class="material-icons-round">auto_awesome</span> Filter</h3><div class="option-scroll" id="filterGrid"></div></section>
     </main>
   </div>
 
   <!-- Email Modal -->
   <div class="modal-backdrop" id="emailModal">
     <div class="modal-content email-modal">
-      <div class="modal-header">
-        <h2>Send Photo via Email</h2>
-        <button class="icon-btn" onclick="closeEmailModal()"><span class="material-icons-round">close</span></button>
-      </div>
+      <div class="modal-header"><h2>Send Photo via Email</h2><button class="icon-btn" onclick="closeEmailModal()"><span class="material-icons-round">close</span></button></div>
       <div class="modal-body">
         <p class="modal-desc">Enter your email to receive this photo.</p>
-        <div class="form-group">
-          <label>Your Name</label>
-          <input type="text" id="recipientName" placeholder="Juan Dela Cruz" maxlength="60">
-        </div>
-        <div class="form-group">
-          <label>Your Email</label>
-          <input type="email" id="recipientEmail" placeholder="juan@email.com">
-        </div>
+        <div class="form-group"><label>Your Name</label><input type="text" id="recipientName" placeholder="Juan Dela Cruz" maxlength="60"></div>
+        <div class="form-group"><label>Your Email</label><input type="email" id="recipientEmail" placeholder="juan@email.com"></div>
         <div class="form-actions">
           <button class="btn btn-outline" onclick="closeEmailModal()">Cancel</button>
-          <button class="btn btn-primary" id="btnSendEmail" onclick="sendEmail()">
-            <span class="material-icons-round">send</span> Send
-          </button>
+          <button class="btn btn-primary" id="btnSendEmail" onclick="sendEmail()"><span class="material-icons-round">send</span> Send</button>
         </div>
         <div class="email-status" id="emailStatus"></div>
       </div>
@@ -142,10 +113,7 @@
   <!-- Settings Modal -->
   <div class="modal-backdrop" id="settingsModal">
     <div class="modal-content settings-modal">
-      <div class="modal-header">
-        <h2>Settings</h2>
-        <button class="icon-btn" onclick="toggleSettings()"><span class="material-icons-round">close</span></button>
-      </div>
+      <div class="modal-header"><h2>Settings</h2><button class="icon-btn" onclick="toggleSettings()"><span class="material-icons-round">close</span></button></div>
       <div class="settings-body">
         <div class="setting-row"><label>Mirror Camera</label><label class="switch"><input type="checkbox" id="settingMirror" checked onchange="updateSettings()"><span class="slider"></span></label></div>
         <div class="setting-row"><label>Flash Effect</label><label class="switch"><input type="checkbox" id="settingFlash" checked onchange="updateSettings()"><span class="slider"></span></label></div>
@@ -164,21 +132,19 @@
 
   <iframe id="printFrame" style="position:absolute;left:-9999px;top:-9999px;width:0;height:0;border:none;"></iframe>
 
-  <!-- Firebase -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="auth.js"></script>
   <script src="script.js"></script>
-
   <script>
-    // Called by auth.js when user is confirmed logged in
     function onAuthReady(user) {
       if (!user) return;
       document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
-      var avatar = document.getElementById('userAvatar');
-      if (user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
-      else { avatar.style.display = 'none'; }
+      var av = document.getElementById('userAvatar');
+      if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; }
+      else { av.style.display = 'none'; }
       initPhotoBooth();
     }
   </script>

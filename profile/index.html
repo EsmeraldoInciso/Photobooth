@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile — Photo Booth</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
+  <style>
+    #splashScreen{position:fixed;inset:0;z-index:9999;background:#0C0C18;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
+    .splash-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+    .splash-emoji{font-size:56px;animation:sp 1.5s ease-in-out infinite}
+    .splash-title{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#B4A7FF,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .splash-spinner{width:28px;height:28px;border:3px solid #28284A;border-top-color:#FF6B9D;border-radius:50%;animation:spin .8s linear infinite;margin-top:8px}
+    @keyframes sp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
@@ -14,74 +23,43 @@
 </head>
 <body>
 
+  <div id="splashScreen">
+    <div class="splash-inner">
+      <div class="splash-emoji">📸</div>
+      <h1 class="splash-title">Photo Booth</h1>
+      <div class="splash-spinner"></div>
+    </div>
+  </div>
+
   <div id="pageContent" style="display:none;">
-    <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <a href="../" class="back-link">
-          <span class="material-icons-round">arrow_back</span>
-        </a>
+        <a href="../" class="back-link"><span class="material-icons-round">arrow_back</span></a>
         <span class="material-icons-round logo-icon">photo_camera</span>
         <h1>Profile</h1>
       </div>
       <div class="header-right">
-        <button class="icon-btn" onclick="handleLogout().then(function(){})" title="Sign Out">
-          <span class="material-icons-round">logout</span>
-        </button>
+        <button class="icon-btn" onclick="handleLogout()" title="Sign Out"><span class="material-icons-round">logout</span></button>
       </div>
     </header>
 
-    <!-- Profile Content -->
     <main class="main-content">
       <div class="profile-card">
         <div class="profile-avatar-wrap">
           <img class="profile-avatar" id="profileAvatar" src="" alt="">
-          <div class="profile-avatar-fallback" id="profileAvatarFallback">
-            <span class="material-icons-round">person</span>
-          </div>
+          <div class="profile-avatar-fallback" id="profileAvatarFallback"><span class="material-icons-round">person</span></div>
         </div>
         <h2 class="profile-name" id="profileName"></h2>
         <p class="profile-email" id="profileEmail"></p>
 
         <div class="profile-info-grid">
-          <div class="profile-info-item">
-            <span class="material-icons-round">badge</span>
-            <div>
-              <label>Display Name</label>
-              <p id="infoName">—</p>
-            </div>
-          </div>
-          <div class="profile-info-item">
-            <span class="material-icons-round">email</span>
-            <div>
-              <label>Email</label>
-              <p id="infoEmail">—</p>
-            </div>
-          </div>
-          <div class="profile-info-item">
-            <span class="material-icons-round">login</span>
-            <div>
-              <label>Sign-in Method</label>
-              <p id="infoProvider">—</p>
-            </div>
-          </div>
-          <div class="profile-info-item">
-            <span class="material-icons-round">calendar_today</span>
-            <div>
-              <label>Account Created</label>
-              <p id="infoCreated">—</p>
-            </div>
-          </div>
-          <div class="profile-info-item">
-            <span class="material-icons-round">schedule</span>
-            <div>
-              <label>Last Sign-in</label>
-              <p id="infoLastLogin">—</p>
-            </div>
-          </div>
+          <div class="profile-info-item"><span class="material-icons-round">badge</span><div><label>Display Name</label><p id="infoName">—</p></div></div>
+          <div class="profile-info-item"><span class="material-icons-round">email</span><div><label>Email</label><p id="infoEmail">—</p></div></div>
+          <div class="profile-info-item"><span class="material-icons-round">login</span><div><label>Sign-in Method</label><p id="infoProvider">—</p></div></div>
+          <div class="profile-info-item"><span class="material-icons-round">calendar_today</span><div><label>Account Created</label><p id="infoCreated">—</p></div></div>
+          <div class="profile-info-item"><span class="material-icons-round">schedule</span><div><label>Last Sign-in</label><p id="infoLastLogin">—</p></div></div>
         </div>
 
-        <!-- Update Display Name -->
         <div class="profile-section">
           <h3>Update Display Name</h3>
           <div class="profile-form-row">
@@ -91,18 +69,14 @@
           <div class="profile-status" id="nameStatus"></div>
         </div>
 
-        <!-- Danger Zone -->
         <div class="profile-section danger-zone">
           <h3>Account</h3>
-          <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-            <span class="material-icons-round">delete_forever</span> Delete Account
-          </button>
+          <button class="btn btn-danger" onclick="confirmDeleteAccount()"><span class="material-icons-round">delete_forever</span> Delete Account</button>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -111,20 +85,11 @@
   <script>
     function onAuthReady(user) {
       if (!user) return;
-
-      // Avatar
       var avatar = document.getElementById('profileAvatar');
       var fallback = document.getElementById('profileAvatarFallback');
-      if (user.photoURL) {
-        avatar.src = user.photoURL;
-        avatar.style.display = 'block';
-        fallback.style.display = 'none';
-      } else {
-        avatar.style.display = 'none';
-        fallback.style.display = 'flex';
-      }
+      if (user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; fallback.style.display = 'none'; }
+      else { avatar.style.display = 'none'; fallback.style.display = 'flex'; }
 
-      // Info
       var name = user.displayName || 'Not set';
       document.getElementById('profileName').textContent = name;
       document.getElementById('profileEmail').textContent = user.email;
@@ -132,58 +97,33 @@
       document.getElementById('infoEmail').textContent = user.email;
       document.getElementById('newDisplayName').value = user.displayName || '';
 
-      // Provider
       var providers = user.providerData.map(function(p) {
-        switch (p.providerId) {
-          case 'google.com': return 'Google';
-          case 'password': return 'Email/Password';
-          default: return p.providerId;
-        }
+        return p.providerId === 'google.com' ? 'Google' : p.providerId === 'password' ? 'Email/Password' : p.providerId;
       });
       document.getElementById('infoProvider').textContent = providers.join(', ') || '—';
 
-      // Dates
-      if (user.metadata.creationTime) {
-        document.getElementById('infoCreated').textContent = new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      }
-      if (user.metadata.lastSignInTime) {
-        document.getElementById('infoLastLogin').textContent = new Date(user.metadata.lastSignInTime).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      }
+      if (user.metadata.creationTime)
+        document.getElementById('infoCreated').textContent = new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+      if (user.metadata.lastSignInTime)
+        document.getElementById('infoLastLogin').textContent = new Date(user.metadata.lastSignInTime).toLocaleString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
     }
 
     function updateDisplayName() {
       var newName = document.getElementById('newDisplayName').value.trim();
-      var statusEl = document.getElementById('nameStatus');
-      if (!newName) { statusEl.textContent = 'Please enter a name.'; statusEl.className = 'profile-status error'; return; }
-
-      var user = firebase.auth().currentUser;
-      user.updateProfile({ displayName: newName })
-        .then(function() {
-          statusEl.textContent = '✅ Display name updated!';
-          statusEl.className = 'profile-status success';
-          document.getElementById('profileName').textContent = newName;
-          document.getElementById('infoName').textContent = newName;
-        })
-        .catch(function(err) {
-          statusEl.textContent = '❌ ' + err.message;
-          statusEl.className = 'profile-status error';
-        });
+      var s = document.getElementById('nameStatus');
+      if (!newName) { s.textContent = 'Please enter a name.'; s.className = 'profile-status error'; return; }
+      firebase.auth().currentUser.updateProfile({ displayName: newName }).then(function() {
+        s.textContent = 'Display name updated!'; s.className = 'profile-status success';
+        document.getElementById('profileName').textContent = newName;
+        document.getElementById('infoName').textContent = newName;
+      }).catch(function(err) { s.textContent = err.message; s.className = 'profile-status error'; });
     }
 
     function confirmDeleteAccount() {
-      if (confirm('Are you sure you want to delete your account? This cannot be undone.')) {
-        var user = firebase.auth().currentUser;
-        user.delete()
-          .then(function() {
-            // Auth state listener will redirect to login
-          })
-          .catch(function(err) {
-            if (err.code === 'auth/requires-recent-login') {
-              alert('For security, please sign out and sign back in before deleting your account.');
-            } else {
-              alert('Error: ' + err.message);
-            }
-          });
+      if (confirm('Delete your account? This cannot be undone.')) {
+        firebase.auth().currentUser.delete().catch(function(err) {
+          alert(err.code === 'auth/requires-recent-login' ? 'Please sign out and back in first.' : err.message);
+        });
       }
     }
   </script>
