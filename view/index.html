@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Booth — View Photo</title>
+  <title>DSnap — View Photo</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <style>
-    :root { --bg: #0C0C18; --bg-card: #141426; --border: #28284A; --text: #EEEEF5; --text-dim: #8585A8; --accent: #FF6B9D; --primary-light: #B4A7FF; --danger: #F87171; --radius: 14px; }
+    :root { --bg: #0C0C18; --bg-card: #141426; --border: #28284A; --text: #EEEEF5; --text-dim: #8585A8; --accent: #2563EB; --primary-light: #60A5FA; --danger: #F87171; --radius: 14px; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 
     .viewer-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); max-width: 500px; width: 100%; overflow: hidden; box-shadow: 0 16px 64px rgba(0,0,0,0.4); }
     .viewer-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-    .viewer-header .material-icons-round { font-size: 24px; color: var(--accent); }
-    .viewer-header h1 { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .viewer-header .material-icons-round { font-size: 24px; color: var(--primary-light); }
+    .viewer-header h1 { font-family: 'Syne', serif; font-size: 1.1rem; font-weight: 700; background: linear-gradient(135deg, var(--primary-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
     .viewer-img { width: 100%; display: block; background: #000; }
     .viewer-info { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
@@ -24,16 +24,16 @@
     .viewer-meta small { color: var(--text-dim); opacity: 0.7; }
 
     .viewer-actions { display: flex; gap: 10px; margin-top: 8px; }
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: all 0.2s; flex: 1; justify-content: center; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; border: none; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; text-decoration: none; transition: all 0.2s; flex: 1; justify-content: center; }
     .btn .material-icons-round { font-size: 18px; }
-    .btn-primary { background: linear-gradient(135deg, #7C6AEF, var(--accent)); color: #fff; box-shadow: 0 2px 12px rgba(124,106,239,0.2); }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,106,239,0.35); }
+    .btn-primary { background: linear-gradient(135deg, #2563EB, #06B6D4); color: #fff; box-shadow: 0 2px 12px rgba(37,99,235,0.2); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(37,99,235,0.35); }
 
     .viewer-loading, .viewer-error { padding: 60px 20px; text-align: center; }
     .viewer-loading p, .viewer-error p { color: var(--text-dim); margin-top: 12px; font-size: 0.9rem; }
     .viewer-error .error-icon { font-size: 48px; color: var(--accent); }
     .viewer-error .error-deleted { color: var(--danger); font-weight: 600; font-size: 0.95rem; }
-    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary-light); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .branding { margin-top: 24px; text-align: center; font-size: 0.75rem; color: var(--text-dim); opacity: 0.5; }
@@ -45,7 +45,7 @@
   <div class="viewer-card">
     <div class="viewer-header">
       <span class="material-icons-round">photo_camera</span>
-      <h1>Photo Booth</h1>
+      <h1>DSnap</h1>
     </div>
 
     <div id="viewLoading" class="viewer-loading">
@@ -70,7 +70,7 @@
   </div>
 
   <div class="branding">
-    <a href="../">📸 Photo Booth</a>
+    <a href="../">DSnap</a>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>

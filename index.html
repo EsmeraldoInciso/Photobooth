@@ -1,22 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Booth</title>
+  <title>DSnap — Photo Booth</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
-  <style>
-    #splashScreen{position:fixed;inset:0;z-index:9999;background:#0C0C18;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
-    .splash-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
-    .splash-emoji{font-size:56px;animation:sp 1.5s ease-in-out infinite}
-    .splash-title{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#B4A7FF,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .splash-spinner{width:28px;height:28px;border:3px solid #28284A;border-top-color:#FF6B9D;border-radius:50%;animation:spin .8s linear infinite;margin-top:8px}
-    @keyframes sp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply saved theme before paint to prevent flash
+    (function(){var t=localStorage.getItem('dsnap_theme')||'dark';document.documentElement.setAttribute('data-theme',t)})();
+  </script>
   <script src="https://www.google.com/recaptcha/api.js?render=6Ld0RWgsAAAAABRdIcHVQcVkgAswfd_wb4mluzfY"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -25,27 +20,52 @@
 </head>
 <body>
 
-  <div id="splashScreen"><div class="splash-inner"><div class="splash-emoji">📸</div><h1 class="splash-title">Photo Booth</h1><div class="splash-spinner"></div></div></div>
+  <!-- Splash -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-inner">
+      <div class="splash-logo"><span>D</span><div class="splash-logo-lens"></div></div>
+      <div class="splash-title">D<span>Snap</span></div>
+      <div class="splash-spinner"></div>
+    </div>
+  </div>
 
   <div id="pageContent" style="display:none;">
-    <header class="app-header">
-      <div class="header-left">
-        <span class="material-icons-round logo-icon">photo_camera</span>
-        <h1>Photo Booth</h1>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="./" class="nav-brand">
+        <div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div>
+        <div class="nav-wordmark">D<span>Snap</span></div>
+      </a>
+      <div class="nav-center">
+        <a href="./" class="nav-link active"><span class="material-icons-round">camera</span> Booth</a>
+        <a href="gallery/" class="nav-link"><span class="material-icons-round">photo_library</span> Gallery</a>
       </div>
-      <div class="header-right">
-        <div class="user-info">
-          <span class="user-name" id="userName"></span>
-          <img class="user-avatar" id="userAvatar" src="" alt="">
+      <div class="nav-right">
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">
+          <span class="material-icons-round" id="themeIcon">dark_mode</span>
+        </button>
+        <button class="nav-link" onclick="toggleSettings()" title="Settings"><span class="material-icons-round">tune</span></button>
+        <button class="nav-link" onclick="toggleKiosk()" id="btnKiosk" title="Fullscreen"><span class="material-icons-round">fullscreen</span></button>
+        <div class="nav-user">
+          <button class="nav-user-btn" onclick="toggleUserMenu()">
+            <div class="nav-avatar" id="navAvatarWrap"><span class="material-icons-round">person</span></div>
+            <span class="nav-user-name" id="navUserName"></span>
+          </button>
+          <div class="nav-dd" id="userDropdown">
+            <div class="dd-head">
+              <div class="dd-head-name" id="ddName"></div>
+              <div class="dd-head-email" id="ddEmail"></div>
+            </div>
+            <a href="profile/" class="dd-item"><span class="material-icons-round">person</span> Profile</a>
+            <a href="gallery/" class="dd-item"><span class="material-icons-round">photo_library</span> Gallery</a>
+            <hr class="dd-sep">
+            <button class="dd-item danger" onclick="handleLogout()"><span class="material-icons-round">logout</span> Sign Out</button>
+          </div>
         </div>
-        <button class="icon-btn" id="btnKiosk" onclick="toggleKiosk()" title="Kiosk Mode"><span class="material-icons-round">fullscreen</span></button>
-        <a class="icon-btn" href="gallery/" title="Gallery"><span class="material-icons-round">photo_library</span></a>
-        <a class="icon-btn" href="profile/" title="Profile"><span class="material-icons-round">person</span></a>
-        <button class="icon-btn" onclick="toggleSettings()" title="Settings"><span class="material-icons-round">tune</span></button>
-        <button class="icon-btn" onclick="handleLogout()" title="Sign Out"><span class="material-icons-round">logout</span></button>
       </div>
-    </header>
+    </nav>
 
+    <!-- Main -->
     <main class="main-content">
       <div class="booth-area">
         <div class="camera-panel">
@@ -83,15 +103,23 @@
       <section class="option-section"><h3><span class="material-icons-round">filter_frames</span> Frame</h3><div class="option-scroll" id="frameGrid"></div></section>
       <section class="option-section"><h3><span class="material-icons-round">auto_awesome</span> Filter</h3><div class="option-scroll" id="filterGrid"></div></section>
     </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-brand">
+        <div class="footer-mark"><span>D</span></div>
+        <span class="footer-name">DSnap</span> · Photo Booth
+      </div>
+      <div class="footer-right">
+        <span>&copy; 2026</span>
+      </div>
+    </footer>
   </div>
 
   <!-- Review Modal -->
   <div class="modal-backdrop" id="reviewModal">
     <div class="modal-content review-modal">
-      <div class="modal-header">
-        <h2>Review Photos</h2>
-        <button class="icon-btn" onclick="document.getElementById('reviewModal').classList.remove('active')"><span class="material-icons-round">close</span></button>
-      </div>
+      <div class="modal-header"><h2>Review Photos</h2><button class="icon-btn" onclick="document.getElementById('reviewModal').classList.remove('active')"><span class="material-icons-round">close</span></button></div>
       <div class="modal-body">
         <p class="modal-desc">Tap <b>Retake</b> on any photo to re-shoot it, or approve all to finalize.</p>
         <div class="review-grid" id="reviewGrid"></div>
@@ -149,11 +177,11 @@
   <!-- QR Modal -->
   <div class="modal-backdrop" id="qrModal">
     <div class="modal-content" style="max-width:360px;text-align:center;">
-      <div class="modal-header"><h2>Scan to Save Photo</h2><button class="icon-btn" onclick="closeQRModal()"><span class="material-icons-round">close</span></button></div>
+      <div class="modal-header"><h2>Scan to Save</h2><button class="icon-btn" onclick="closeQRModal()"><span class="material-icons-round">close</span></button></div>
       <div class="modal-body" style="padding:24px;">
         <canvas id="qrModalCanvas" style="width:240px;height:240px;image-rendering:pixelated;margin:0 auto;display:block;border-radius:8px;"></canvas>
-        <p id="qrModalUrl" style="font-size:0.72rem;color:#8585A8;margin-top:12px;word-break:break-all;"></p>
-        <p style="font-size:0.82rem;color:#EEEEF5;margin-top:8px;">Point your phone camera at this code to view and download your photo — no login needed!</p>
+        <p id="qrModalUrl" style="font-size:.72rem;color:var(--text-dim);margin-top:12px;word-break:break-all;"></p>
+        <p style="font-size:.82rem;color:var(--text);margin-top:8px;">Point your phone camera at this code to view and download your photo.</p>
       </div>
     </div>
   </div>
@@ -166,11 +194,41 @@
   <script src="auth.js"></script>
   <script src="script.js"></script>
   <script>
+    // Theme
+    function toggleTheme() {
+      var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('dsnap_theme', next);
+      updateThemeIcon();
+    }
+    function updateThemeIcon() {
+      var t = document.documentElement.getAttribute('data-theme') || 'dark';
+      document.getElementById('themeIcon').textContent = t === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+    updateThemeIcon();
+
+    // User dropdown
+    function toggleUserMenu() {
+      var dd = document.getElementById('userDropdown');
+      dd.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+      var dd = document.getElementById('userDropdown');
+      if (dd && !e.target.closest('.nav-user')) dd.classList.remove('open');
+    });
+
+    // Auth ready
     function onAuthReady(user) {
       if (!user) return;
-      document.getElementById('userName').textContent = user.displayName || user.email.split('@')[0];
-      var av = document.getElementById('userAvatar');
-      if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; } else av.style.display = 'none';
+      var name = user.displayName || user.email.split('@')[0];
+      document.getElementById('navUserName').textContent = name;
+      document.getElementById('ddName').textContent = name;
+      document.getElementById('ddEmail').textContent = user.email;
+      var wrap = document.getElementById('navAvatarWrap');
+      if (user.photoURL) {
+        wrap.innerHTML = '<img src="' + user.photoURL + '" alt="">';
+      }
       initPhotoBooth();
     }
   </script>

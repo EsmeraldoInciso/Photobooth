@@ -1,47 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile — Photo Booth</title>
+  <title>Profile — DSnap</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
-  <style>
-    #splashScreen{position:fixed;inset:0;z-index:9999;background:#0C0C18;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
-    .splash-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
-    .splash-emoji{font-size:56px;animation:sp 1.5s ease-in-out infinite}
-    .splash-title{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#B4A7FF,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .splash-spinner{width:28px;height:28px;border:3px solid #28284A;border-top-color:#FF6B9D;border-radius:50%;animation:spin .8s linear infinite;margin-top:8px}
-    @keyframes sp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
+  <script>(function(){var t=localStorage.getItem('dsnap_theme')||'dark';document.documentElement.setAttribute('data-theme',t)})()</script>
   <script src="https://www.google.com/recaptcha/api.js?render=6Ld0RWgsAAAAABRdIcHVQcVkgAswfd_wb4mluzfY"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
   <script>var PAGE_TYPE = 'private';</script>
 </head>
 <body>
-
-  <div id="splashScreen">
-    <div class="splash-inner">
-      <div class="splash-emoji">📸</div>
-      <h1 class="splash-title">Photo Booth</h1>
-      <div class="splash-spinner"></div>
-    </div>
-  </div>
+  <div class="splash-screen" id="splashScreen"><div class="splash-inner"><div class="splash-logo"><span>D</span><div class="splash-logo-lens"></div></div><div class="splash-title">D<span>Snap</span></div><div class="splash-spinner"></div></div></div>
 
   <div id="pageContent" style="display:none;">
-    <header class="app-header">
-      <div class="header-left">
-        <a href="../" class="back-link"><span class="material-icons-round">arrow_back</span></a>
-        <span class="material-icons-round logo-icon">photo_camera</span>
-        <h1>Profile</h1>
+    <nav class="navbar">
+      <a href="../" class="nav-brand">
+        <div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div>
+        <div class="nav-wordmark">D<span>Snap</span></div>
+      </a>
+      <div class="nav-center">
+        <a href="../" class="nav-link"><span class="material-icons-round">camera</span> Booth</a>
+        <a href="../gallery/" class="nav-link"><span class="material-icons-round">photo_library</span> Gallery</a>
       </div>
-      <div class="header-right">
-        <button class="icon-btn" onclick="handleLogout()" title="Sign Out"><span class="material-icons-round">logout</span></button>
+      <div class="nav-right">
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn"><span class="material-icons-round" id="themeIcon">dark_mode</span></button>
       </div>
-    </header>
+    </nav>
 
     <main class="main-content">
       <div class="profile-card">
@@ -51,7 +39,6 @@
         </div>
         <h2 class="profile-name" id="profileName"></h2>
         <p class="profile-email" id="profileEmail"></p>
-
         <div class="profile-info-grid">
           <div class="profile-info-item"><span class="material-icons-round">badge</span><div><label>Display Name</label><p id="infoName">—</p></div></div>
           <div class="profile-info-item"><span class="material-icons-round">email</span><div><label>Email</label><p id="infoEmail">—</p></div></div>
@@ -59,7 +46,6 @@
           <div class="profile-info-item"><span class="material-icons-round">calendar_today</span><div><label>Account Created</label><p id="infoCreated">—</p></div></div>
           <div class="profile-info-item"><span class="material-icons-round">schedule</span><div><label>Last Sign-in</label><p id="infoLastLogin">—</p></div></div>
         </div>
-
         <div class="profile-section">
           <h3>Update Display Name</h3>
           <div class="profile-form-row">
@@ -68,46 +54,48 @@
           </div>
           <div class="profile-status" id="nameStatus"></div>
         </div>
-
+        <div class="profile-section">
+          <h3>Session</h3>
+          <button class="btn btn-outline" onclick="handleLogout()" style="margin-bottom:12px;"><span class="material-icons-round">logout</span> Sign Out</button>
+        </div>
         <div class="profile-section danger-zone">
-          <h3>Account</h3>
-          <button class="btn btn-danger" onclick="confirmDeleteAccount()"><span class="material-icons-round">delete_forever</span> Delete Account</button>
+          <h3>Danger Zone</h3>
+          <button class="btn-danger" onclick="confirmDeleteAccount()"><span class="material-icons-round">delete_forever</span> Delete Account</button>
         </div>
       </div>
     </main>
+
+    <footer class="app-footer">
+      <div class="footer-brand"><div class="footer-mark"><span>D</span></div><span class="footer-name">DSnap</span> · Photo Booth</div>
+      <div class="footer-right"><span>&copy; 2026</span></div>
+    </footer>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="../auth.js"></script>
-
   <script>
+    function toggleTheme(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('dsnap_theme',n);document.getElementById('themeIcon').textContent=n==='dark'?'light_mode':'dark_mode'}
+    (function(){var t=document.documentElement.getAttribute('data-theme')||'dark';document.getElementById('themeIcon').textContent=t==='dark'?'light_mode':'dark_mode'})();
+
     function onAuthReady(user) {
       if (!user) return;
       var avatar = document.getElementById('profileAvatar');
       var fallback = document.getElementById('profileAvatarFallback');
       if (user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; fallback.style.display = 'none'; }
       else { avatar.style.display = 'none'; fallback.style.display = 'flex'; }
-
       var name = user.displayName || 'Not set';
       document.getElementById('profileName').textContent = name;
       document.getElementById('profileEmail').textContent = user.email;
       document.getElementById('infoName').textContent = name;
       document.getElementById('infoEmail').textContent = user.email;
       document.getElementById('newDisplayName').value = user.displayName || '';
-
-      var providers = user.providerData.map(function(p) {
-        return p.providerId === 'google.com' ? 'Google' : p.providerId === 'password' ? 'Email/Password' : p.providerId;
-      });
+      var providers = user.providerData.map(function(p) { return p.providerId === 'google.com' ? 'Google' : p.providerId === 'password' ? 'Email/Password' : p.providerId; });
       document.getElementById('infoProvider').textContent = providers.join(', ') || '—';
-
-      if (user.metadata.creationTime)
-        document.getElementById('infoCreated').textContent = new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-      if (user.metadata.lastSignInTime)
-        document.getElementById('infoLastLogin').textContent = new Date(user.metadata.lastSignInTime).toLocaleString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      if (user.metadata.creationTime) document.getElementById('infoCreated').textContent = new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+      if (user.metadata.lastSignInTime) document.getElementById('infoLastLogin').textContent = new Date(user.metadata.lastSignInTime).toLocaleString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
     }
-
     function updateDisplayName() {
       var newName = document.getElementById('newDisplayName').value.trim();
       var s = document.getElementById('nameStatus');
@@ -118,12 +106,9 @@
         document.getElementById('infoName').textContent = newName;
       }).catch(function(err) { s.textContent = err.message; s.className = 'profile-status error'; });
     }
-
     function confirmDeleteAccount() {
       if (confirm('Delete your account? This cannot be undone.')) {
-        firebase.auth().currentUser.delete().catch(function(err) {
-          alert(err.code === 'auth/requires-recent-login' ? 'Please sign out and back in first.' : err.message);
-        });
+        firebase.auth().currentUser.delete().catch(function(err) { alert(err.code === 'auth/requires-recent-login' ? 'Please sign out and back in first.' : err.message); });
       }
     }
   </script>

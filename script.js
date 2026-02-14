@@ -63,7 +63,7 @@ var state = {
   kioskMode: false, kioskAutoResetMs: 30000, kioskResetTimer: null,
   settings: {
     mirror: true, flash: true, sound: true,
-    eventTitle: '', eventDate: '',
+    eventTitle: 'DSnap', eventDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     emailPublicKey: '', emailServiceId: '', emailTemplateId: '',
     showQR: true, saveToGallery: true,
   }
@@ -773,8 +773,8 @@ function sendEmail() {
   document.getElementById('btnSendEmail').disabled = true;
   emailjs.init(s.emailPublicKey);
   emailjs.send(s.emailServiceId, s.emailTemplateId, {
-    to_name: name, to_email: email, from_name: s.eventTitle || 'Photo Booth',
-    event_name: s.eventTitle || 'Photo Booth', event_date: s.eventDate || new Date().toLocaleDateString(),
+    to_name: name, to_email: email, from_name: s.eventTitle || 'DSnap',
+    event_name: s.eventTitle || 'DSnap', event_date: s.eventDate || new Date().toLocaleDateString(),
     message: 'Here is your photo!', image: document.getElementById('livePreviewCanvas').toDataURL('image/png')
   }).then(function() {
     st.textContent = '\u2705 Sent to ' + email + '!'; st.className = 'email-status sent';

@@ -1,20 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gallery — Photo Booth</title>
+  <title>Gallery — DSnap</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📸</text></svg>">
-  <style>
-    #splashScreen{position:fixed;inset:0;z-index:9999;background:#0C0C18;display:flex;align-items:center;justify-content:center;transition:opacity .35s ease}
-    .splash-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
-    .splash-emoji{font-size:56px;animation:sp 1.5s ease-in-out infinite}
-    .splash-title{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#B4A7FF,#FF6B9D);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .splash-spinner{width:28px;height:28px;border:3px solid #28284A;border-top-color:#FF6B9D;border-radius:50%;animation:spin .8s linear infinite;margin-top:8px}
-    @keyframes sp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script>(function(){var t=localStorage.getItem("dsnap_theme")||"dark";document.documentElement.setAttribute("data-theme",t)})()</script>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
   <script src="https://www.google.com/recaptcha/api.js?render=6Ld0RWgsAAAAABRdIcHVQcVkgAswfd_wb4mluzfY"></script>
@@ -23,19 +15,22 @@
 </head>
 <body>
 
-  <div id="splashScreen"><div class="splash-inner"><div class="splash-emoji">📸</div><h1 class="splash-title">Photo Booth</h1><div class="splash-spinner"></div></div></div>
+  <div class="splash-screen" id="splashScreen"><div class="splash-inner"><div class="splash-logo"><span>D</span><div class="splash-logo-lens"></div></div><div class="splash-title">D<span>Snap</span></div><div class="splash-spinner"></div></div></div>
 
   <div id="pageContent" style="display:none;">
-    <header class="app-header">
-      <div class="header-left">
-        <a href="../" class="back-link"><span class="material-icons-round">arrow_back</span></a>
-        <span class="material-icons-round logo-icon">photo_camera</span>
-        <h1>Gallery</h1>
+    <nav class="navbar">
+      <a href="../" class="nav-brand">
+        <div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div>
+        <div class="nav-wordmark">D<span>Snap</span></div>
+      </a>
+      <div class="nav-center">
+        <a href="../" class="nav-link"><span class="material-icons-round">camera</span> Booth</a>
+        <a href="./" class="nav-link active"><span class="material-icons-round">photo_library</span> Gallery</a>
       </div>
-      <div class="header-right">
-        <button class="icon-btn" onclick="handleLogout()" title="Sign Out"><span class="material-icons-round">logout</span></button>
+      <div class="nav-right">
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn"><span class="material-icons-round" id="themeIcon">dark_mode</span></button>
       </div>
-    </header>
+    </nav>
 
     <main class="main-content">
       <div class="gallery-header">
@@ -59,6 +54,7 @@
 
       <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
     </main>
+    <footer class="app-footer"><div class="footer-brand"><div class="footer-mark"><span>D</span></div><span class="footer-name">DSnap</span> · Photo Booth</div><div class="footer-right"><span>&copy; 2026</span></div></footer>
   </div>
 
   <!-- Lightbox -->
@@ -261,6 +257,9 @@
       closeLightbox();
       deletePhoto(idx);
     }
+
+    function toggleTheme(){var c=document.documentElement.getAttribute('data-theme')||'dark';var n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('dsnap_theme',n);document.getElementById('themeIcon').textContent=n==='dark'?'light_mode':'dark_mode'}
+    (function(){var t=document.documentElement.getAttribute('data-theme')||'dark';document.getElementById('themeIcon').textContent=t==='dark'?'light_mode':'dark_mode'})();
 
     document.addEventListener('keydown', function(e) {
       if (document.getElementById('lightboxOverlay').style.display === 'flex' && e.key === 'Escape') closeLightbox();
