@@ -79,12 +79,12 @@
 
   <script>
     var firebaseConfig = {
-      apiKey: "AIzaSyDLBz2VU3bOb_aTx32VQcHDjYautJt7Bc0",
-      authDomain: "swiftly-photobooth.firebaseapp.com",
-      projectId: "swiftly-photobooth",
-      storageBucket: "swiftly-photobooth.firebasestorage.app",
-      messagingSenderId: "539796809069",
-      appId: "1:539796809069:web:aa13d56e96a498b9d4f04c"
+      apiKey: "AIzaSyApUPTByzZeBUG38F-Y5QzwufrLNM-im7Q",
+      authDomain: "photobooth-d59e8.firebaseapp.com",
+      projectId: "photobooth-d59e8",
+      storageBucket: "photobooth-d59e8.firebasestorage.app",
+      messagingSenderId: "321489454003",
+      appId: "1:321489454003:web:69241db345461cd2c6c1c6"
     };
 
     var photoData = null;
@@ -104,7 +104,7 @@
         // Sign in anonymously so Firestore rules allow read
         firebase.auth().signInAnonymously()
           .then(function() {
-            console.log('[View] Signed in anonymously');
+            console.log('[View] Signed in anonymously, uid:', firebase.auth().currentUser.uid);
             return firebase.firestore().collection('gallery').doc(docId).get();
           })
           .then(function(doc) {
@@ -126,7 +126,7 @@
             } else if (err.code === 'not-found') {
               showError('deleted', 'This photo has been removed from the gallery.');
             } else {
-              showError('error', 'Could not load photo. Please try again.');
+              showError('error', 'Could not load photo: ' + (err.message || err.code || 'Unknown error'));
             }
           });
       } catch(e) {

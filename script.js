@@ -236,26 +236,7 @@ function approveAllPhotos() {
 
   renderLivePreviewAsync(function() {
     if (state.settings.saveToGallery) {
-      // First save to get docId, then draw QR on canvas, then re-save with QR
-      saveToGallery(function(docId) {
-        lastSavedDocId = docId;
-        if (state.settings.showQR) {
-          drawQRBadge(docId);
-          // Re-save the image with QR+logo now on the canvas
-          reSaveWithOverlays(docId);
-          if (docId) {
-            document.getElementById('btnViewQR').style.display = '';
-            showStatus('\u2601\uFE0F Saved to cloud with QR!', 'success');
-          } else {
-            showStatus('\uD83D\uDCF1 Saved locally (no QR link)', 'info');
-          }
-        } else if (docId) {
-          showStatus('\u2601\uFE0F Saved to cloud!', 'success');
-        } else {
-          showStatus('\uD83D\uDCF1 Saved locally', 'info');
-        }
-        startKioskTimer();
-      });
+      saveToGalleryWithQR();
     } else {
       if (state.settings.showQR) drawQRBadge(null);
       showStatus('Photos approved!', 'success');
@@ -264,25 +245,82 @@ function approveAllPhotos() {
   });
 }
 
-function reSaveWithOverlays(docId) {
+function generateDocId() {
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var id = '';
+  for (var i = 0; i < 20; i++) id += chars.charAt(Math.floor(Math.random() * chars.length));
+  return id;
+}
+
+function saveToGalleryWithQR() {
+  var user = null;
+  try { user = firebase.auth().currentUser; } catch(e) {}
+  var canSaveToCloud = typeof db !== 'undefined' && db;
+  var preDocId = canSaveToCloud ? generateDocId() : null;
+
+  // Draw QR with pre-generated ID BEFORE capturing image
+  if (state.settings.showQR) {
+    drawQRBadge(preDocId);
+  }
+
+  // NOW capture the canvas (includes QR + D logo)
   var canvas = document.getElementById('livePreviewCanvas');
   var imageData = canvas.toDataURL('image/jpeg', 0.85);
-  if (docId && db) {
-    // Update the Firestore doc with the new image that includes QR+logo
-    try {
-      db.collection('gallery').doc(docId).update({ imageData: imageData }).then(function() {
-        console.log('[Gallery] Updated with QR overlay');
-      }).catch(function(e) { console.warn('[Gallery] Update failed:', e); });
-    } catch(e) { console.warn('[Gallery] Update error:', e); }
+
+  var entry = {
+    userId: user ? user.uid : 'anon',
+    userName: user ? (user.displayName || user.email.split('@')[0]) : 'Guest',
+    eventTitle: state.settings.eventTitle || 'DSnap',
+    eventDate: state.settings.eventDate || new Date().toLocaleDateString(),
+    layout: state.selectedLayout,
+    frame: state.selectedFrame,
+    filter: state.selectedFilter,
+    imageData: imageData,
+    createdAt: null,
+    storage: 'local'
+  };
+
+  if (canSaveToCloud) {
+    db.collection('gallery').get()
+      .then(function(snapshot) {
+        if (snapshot.size < MAX_FIREBASE_GALLERY) {
+          entry.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          entry.storage = 'cloud';
+          // Use the pre-generated ID so QR link matches
+          return db.collection('gallery').doc(preDocId).set(entry)
+            .then(function() {
+              console.log('[Gallery] Saved to Firebase with ID:', preDocId);
+              lastSavedDocId = preDocId;
+              document.getElementById('btnViewQR').style.display = '';
+              showStatus('\u2601\uFE0F Saved to cloud with QR!', 'success');
+              startKioskTimer();
+            });
+        } else {
+          // Cloud full — save locally, QR already drawn (points to gallery)
+          entry.createdAt = new Date().toISOString();
+          entry.storage = 'local';
+          saveLocalGallery(entry);
+          lastSavedDocId = null;
+          showStatus('\uD83D\uDCF1 Saved locally (cloud full)', 'info');
+          startKioskTimer();
+        }
+      })
+      .catch(function(err) {
+        console.warn('[Gallery] Firebase error:', err);
+        entry.createdAt = new Date().toISOString();
+        entry.storage = 'local';
+        saveLocalGallery(entry);
+        lastSavedDocId = null;
+        showStatus('\uD83D\uDCF1 Saved locally', 'info');
+        startKioskTimer();
+      });
+  } else {
+    entry.createdAt = new Date().toISOString();
+    saveLocalGallery(entry);
+    lastSavedDocId = null;
+    showStatus('\uD83D\uDCF1 Saved locally', 'info');
+    startKioskTimer();
   }
-  // Also update local storage if it exists
-  try {
-    var local = JSON.parse(localStorage.getItem('photobooth_gallery') || '[]');
-    if (local.length > 0) {
-      local[local.length - 1].imageData = imageData;
-      localStorage.setItem('photobooth_gallery', JSON.stringify(local));
-    }
-  } catch(e) {}
 }
 
 // ─── Async preview render (waits for all images to load) ────────
