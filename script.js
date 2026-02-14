@@ -403,9 +403,9 @@ function drawQRBadge(docId) {
   // Otherwise fall back to gallery page
   var url;
   if (docId) {
-    url = window.location.origin + '/Photobooth/view/?id=' + docId;
+    url = window.location.origin + '/dsnap/view/?id=' + docId;
   } else {
-    url = window.location.origin + '/Photobooth/gallery/';
+    url = window.location.origin + '/dsnap/gallery/';
   }
 
   try {
@@ -822,7 +822,7 @@ function printPhoto() {
 function showQRModal() {
   if (!lastSavedDocId || typeof qrcode === 'undefined') return;
 
-  var url = window.location.origin + '/Photobooth/view/?id=' + lastSavedDocId;
+  var url = window.location.origin + '/dsnap/view/?id=' + lastSavedDocId;
   var canvas = document.getElementById('qrModalCanvas');
   var ctx = canvas.getContext('2d');
 

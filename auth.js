@@ -20,7 +20,7 @@ var firebaseConfig = {
 
 var RECAPTCHA_SITE_KEY = '6Ld0RWgsAAAAABRdIcHVQcVkgAswfd_wb4mluzfY';
 var MAX_SIGNUPS_PER_DEVICE = 2;
-var BASE_PATH = '/Photobooth/';
+var BASE_PATH = '/dsnap/';
 
 function appUrl(page) { return BASE_PATH + page; }
 
