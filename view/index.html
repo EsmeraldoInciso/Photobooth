@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <style>
-    :root { --bg: #0C0C18; --bg-card: #141426; --border: #28284A; --text: #EEEEF5; --text-dim: #8585A8; --accent: #FF6B9D; --primary-light: #B4A7FF; --radius: 14px; }
+    :root { --bg: #0C0C18; --bg-card: #141426; --border: #28284A; --text: #EEEEF5; --text-dim: #8585A8; --accent: #FF6B9D; --primary-light: #B4A7FF; --danger: #F87171; --radius: 14px; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
 
@@ -29,10 +29,10 @@
     .btn-primary { background: linear-gradient(135deg, #7C6AEF, var(--accent)); color: #fff; box-shadow: 0 2px 12px rgba(124,106,239,0.2); }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,106,239,0.35); }
 
-    /* States */
     .viewer-loading, .viewer-error { padding: 60px 20px; text-align: center; }
     .viewer-loading p, .viewer-error p { color: var(--text-dim); margin-top: 12px; font-size: 0.9rem; }
-    .viewer-error .material-icons-round { font-size: 48px; color: var(--accent); }
+    .viewer-error .error-icon { font-size: 48px; color: var(--accent); }
+    .viewer-error .error-deleted { color: var(--danger); font-weight: 600; font-size: 0.95rem; }
     .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -48,19 +48,16 @@
       <h1>Photo Booth</h1>
     </div>
 
-    <!-- Loading state -->
     <div id="viewLoading" class="viewer-loading">
       <div class="spinner"></div>
       <p>Loading your photo...</p>
     </div>
 
-    <!-- Error state -->
     <div id="viewError" class="viewer-error" style="display:none;">
-      <span class="material-icons-round">broken_image</span>
-      <p id="errorMsg">Photo not found or link expired.</p>
+      <span class="material-icons-round error-icon" id="errorIcon">broken_image</span>
+      <p id="errorMsg"></p>
     </div>
 
-    <!-- Photo display -->
     <div id="viewContent" style="display:none;">
       <img id="viewImg" class="viewer-img" src="" alt="Photo Booth Photo">
       <div class="viewer-info">
@@ -77,10 +74,10 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Firebase config (same as auth.js — but no auth required)
     var firebaseConfig = {
       apiKey: "AIzaSyDLBz2VU3bOb_aTx32VQcHDjYautJt7Bc0",
       authDomain: "swiftly-photobooth.firebaseapp.com",
@@ -93,35 +90,48 @@
     var photoData = null;
 
     function init() {
-      // Get doc ID from URL
       var params = new URLSearchParams(window.location.search);
       var docId = params.get('id');
 
       if (!docId) {
-        showError('No photo ID provided.');
+        showError('no-id', 'No photo ID provided in the URL.');
         return;
       }
 
       try {
         firebase.initializeApp(firebaseConfig);
-        var db = firebase.firestore();
 
-        db.collection('gallery').doc(docId).get()
+        // Sign in anonymously so Firestore rules allow read
+        firebase.auth().signInAnonymously()
+          .then(function() {
+            console.log('[View] Signed in anonymously');
+            return firebase.firestore().collection('gallery').doc(docId).get();
+          })
           .then(function(doc) {
-            if (!doc.exists) {
-              showError('Photo not found. It may have been deleted.');
+            if (!doc || !doc.exists) {
+              showError('deleted', 'This photo has been removed from the gallery.');
               return;
             }
             photoData = doc.data();
+            if (!photoData.imageData) {
+              showError('deleted', 'This photo has been removed from the gallery.');
+              return;
+            }
             showPhoto(photoData);
           })
           .catch(function(err) {
-            console.error('[View] Fetch error:', err);
-            showError('Could not load photo. Please try again.');
+            console.error('[View] Error:', err);
+            if (err.code === 'permission-denied') {
+              showError('error', 'Access denied. The photo may have been removed.');
+            } else if (err.code === 'not-found') {
+              showError('deleted', 'This photo has been removed from the gallery.');
+            } else {
+              showError('error', 'Could not load photo. Please try again.');
+            }
           });
       } catch(e) {
         console.error('[View] Init error:', e);
-        showError('Something went wrong.');
+        showError('error', 'Something went wrong loading the page.');
       }
     }
 
@@ -144,10 +154,25 @@
       document.getElementById('viewMeta').innerHTML = meta;
     }
 
-    function showError(msg) {
+    function showError(type, msg) {
       document.getElementById('viewLoading').style.display = 'none';
-      document.getElementById('viewError').style.display = 'block';
-      document.getElementById('errorMsg').textContent = msg;
+      var el = document.getElementById('viewError');
+      el.style.display = 'block';
+
+      var icon = document.getElementById('errorIcon');
+      var msgEl = document.getElementById('errorMsg');
+
+      if (type === 'deleted') {
+        icon.textContent = 'delete_forever';
+        icon.style.color = '#F87171';
+        msgEl.innerHTML = '<span class="error-deleted">Your image has already been removed.</span><br><small style="color:#8585A8;">The photo was deleted from the gallery by the organizer.</small>';
+      } else if (type === 'no-id') {
+        icon.textContent = 'link_off';
+        msgEl.textContent = msg;
+      } else {
+        icon.textContent = 'broken_image';
+        msgEl.textContent = msg;
+      }
     }
 
     function downloadPhoto() {

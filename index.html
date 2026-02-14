@@ -73,6 +73,7 @@
             <button class="btn btn-sm btn-outline" onclick="downloadPhoto()"><span class="material-icons-round">download</span> Download</button>
             <button class="btn btn-sm btn-outline" onclick="printPhoto()"><span class="material-icons-round">print</span> Print</button>
             <button class="btn btn-sm btn-outline" onclick="showReviewScreen()"><span class="material-icons-round">edit</span> Retake</button>
+            <button class="btn btn-sm btn-outline" id="btnViewQR" onclick="showQRModal()" style="display:none;"><span class="material-icons-round">qr_code_2</span> QR</button>
             <button class="btn btn-sm btn-primary" onclick="openEmailModal()"><span class="material-icons-round">email</span> Email</button>
           </div>
           <div class="status-msg" id="statusMsg"></div>
@@ -141,6 +142,18 @@
         <div class="setting-row"><label>Public Key</label><input type="text" id="settingEmailPublicKey" placeholder="Public key" onchange="updateSettings()"></div>
         <div class="setting-row"><label>Service ID</label><input type="text" id="settingEmailServiceId" placeholder="service_xxx" onchange="updateSettings()"></div>
         <div class="setting-row"><label>Template ID</label><input type="text" id="settingEmailTemplateId" placeholder="template_xxx" onchange="updateSettings()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="modal-backdrop" id="qrModal">
+    <div class="modal-content" style="max-width:360px;text-align:center;">
+      <div class="modal-header"><h2>Scan to Save Photo</h2><button class="icon-btn" onclick="closeQRModal()"><span class="material-icons-round">close</span></button></div>
+      <div class="modal-body" style="padding:24px;">
+        <canvas id="qrModalCanvas" style="width:240px;height:240px;image-rendering:pixelated;margin:0 auto;display:block;border-radius:8px;"></canvas>
+        <p id="qrModalUrl" style="font-size:0.72rem;color:#8585A8;margin-top:12px;word-break:break-all;"></p>
+        <p style="font-size:0.82rem;color:#EEEEF5;margin-top:8px;">Point your phone camera at this code to view and download your photo — no login needed!</p>
       </div>
     </div>
   </div>

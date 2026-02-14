@@ -234,17 +234,20 @@ function approveAllPhotos() {
   document.getElementById('previewActions').style.display = 'flex';
   showStatus('Rendering final photo...', 'info');
 
-  // Wait for all images to load into canvas, THEN save and add QR
   renderLivePreviewAsync(function() {
     if (state.settings.saveToGallery) {
-      // Save first, then draw QR with the doc ID
       saveToGallery(function(docId) {
+        lastSavedDocId = docId;
         if (state.settings.showQR && docId) {
           drawQRBadge(docId);
+          document.getElementById('btnViewQR').style.display = '';
           showStatus('\u2601\uFE0F Saved to cloud with QR!', 'success');
         } else if (state.settings.showQR) {
-          // No doc ID (local save) — draw QR to gallery page instead
           drawQRBadge(null);
+          showStatus('\uD83D\uDCF1 Saved locally (no QR link)', 'info');
+        } else if (docId) {
+          showStatus('\u2601\uFE0F Saved to cloud!', 'success');
+        } else {
           showStatus('\uD83D\uDCF1 Saved locally', 'info');
         }
         startKioskTimer();
@@ -387,6 +390,7 @@ function drawQRBadge(docId) {
 // ═══════════════════════════════════════════════════════════════
 
 var MAX_FIREBASE_GALLERY = 5;
+var lastSavedDocId = null; // Track last Firebase doc ID for QR
 
 function saveToGallery(callback) {
   var canvas = document.getElementById('livePreviewCanvas');
@@ -676,7 +680,9 @@ function selectFilter(id) {
 function resetBooth() {
   state.capturedPhotos = []; state.boothComplete = false;
   state.currentShot = 0; state.retakeIndex = -1;
+  lastSavedDocId = null;
   document.getElementById('previewActions').style.display = 'none';
+  document.getElementById('btnViewQR').style.display = 'none';
   document.getElementById('shotCounter').classList.remove('visible');
   document.getElementById('reviewModal').classList.remove('active');
   clearStatus(); clearKioskTimer(); renderLivePreview();
@@ -701,6 +707,53 @@ function printPhoto() {
   doc.open();
   doc.write('<!DOCTYPE html><html><head><style>@page{size:'+pw+'in '+ph+'in;margin:0}*{margin:0;padding:0}body{width:'+pw+'in;height:'+ph+'in;display:flex;align-items:center;justify-content:center}img{width:'+pw+'in;height:'+ph+'in;object-fit:contain}</style></head><body><img src="'+dataUrl+'" onload="setTimeout(function(){window.print()},300)"></body></html>');
   doc.close();
+}
+
+// ─── Email ──────────────────────────────────────────────────────
+
+// ─── QR Modal ───────────────────────────────────────────────────
+
+function showQRModal() {
+  if (!lastSavedDocId || typeof qrcode === 'undefined') return;
+
+  var url = window.location.origin + '/Photobooth/view/?id=' + lastSavedDocId;
+  var canvas = document.getElementById('qrModalCanvas');
+  var ctx = canvas.getContext('2d');
+
+  try {
+    var qr = qrcode(0, 'L');
+    qr.addData(url);
+    qr.make();
+
+    var modules = qr.getModuleCount();
+    var size = modules * 8; // 8px per module for crisp display
+    canvas.width = size;
+    canvas.height = size;
+
+    // White background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, size, size);
+
+    // Draw modules
+    for (var row = 0; row < modules; row++) {
+      for (var col = 0; col < modules; col++) {
+        if (qr.isDark(row, col)) {
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(col * 8, row * 8, 8, 8);
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('[QR Modal] Failed:', e);
+    return;
+  }
+
+  document.getElementById('qrModalUrl').textContent = url;
+  document.getElementById('qrModal').classList.add('active');
+}
+
+function closeQRModal() {
+  document.getElementById('qrModal').classList.remove('active');
 }
 
 // ─── Email ──────────────────────────────────────────────────────
