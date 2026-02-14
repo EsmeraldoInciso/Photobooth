@@ -377,7 +377,7 @@ function drawQRBadge(docId) {
     // Label
     var label = docId ? 'Scan to Save' : 'Gallery';
     ctx.fillStyle = '#555555';
-    ctx.font = '600 ' + Math.max(10, pixelSize * 2) + 'px "DM Sans", sans-serif';
+    ctx.font = '600 ' + Math.max(10, pixelSize * 2) + 'px "Outfit", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(label, x + totalW / 2, y + padding + qrSize + padding + pixelSize);
   } catch(e) {
@@ -592,22 +592,63 @@ function drawBranding(ctx, cw, ch, bgColor) {
   var brandY = ch * 0.88, cx = cw / 2;
   if (state.settings.eventTitle) {
     ctx.fillStyle = textColor;
-    ctx.font = '600 ' + (cw * 0.045) + 'px "Playfair Display", Georgia, serif';
+    ctx.font = '800 ' + (cw * 0.045) + 'px "Syne", sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(state.settings.eventTitle, cx, brandY);
   }
   if (state.settings.eventDate) {
     ctx.fillStyle = mutedColor;
-    ctx.font = '400 ' + (cw * 0.03) + 'px "DM Sans", sans-serif';
+    ctx.font = '400 ' + (cw * 0.03) + 'px "Outfit", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(state.settings.eventDate, cx, brandY + cw * 0.06);
   }
   if (!state.settings.eventTitle && !state.settings.eventDate) {
-    ctx.fillStyle = mutedColor;
-    ctx.font = '400 ' + (cw * 0.028) + 'px "DM Sans", sans-serif';
+    ctx.fillStyle = textColor;
+    ctx.font = '800 ' + (cw * 0.04) + 'px "Syne", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('\uD83D\uDCF8 Photo Booth', cx, brandY + cw * 0.02);
+    ctx.fillText('DSnap', cx, brandY);
+    ctx.fillStyle = mutedColor;
+    ctx.font = '400 ' + (cw * 0.025) + 'px "Outfit", sans-serif';
+    ctx.fillText(new Date().toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}), cx, brandY + cw * 0.05);
   }
+  drawDLogo(ctx, cw, ch, isDark);
+}
+
+function drawDLogo(ctx, cw, ch, isDark) {
+  var size = cw * 0.06;
+  var x = cw * 0.03;
+  var y = ch - size - ch * 0.02;
+  var r = size * 0.2;
+  ctx.save();
+  var grad = ctx.createLinearGradient(x, y, x + size, y + size);
+  grad.addColorStop(0, '#2563EB');
+  grad.addColorStop(1, '#06B6D4');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + size - r, y);
+  ctx.quadraticCurveTo(x + size, y, x + size, y + r);
+  ctx.lineTo(x + size, y + size - r);
+  ctx.quadraticCurveTo(x + size, y + size, x + size - r, y + size);
+  ctx.lineTo(x + r, y + size);
+  ctx.quadraticCurveTo(x, y + size, x, y + size - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '800 ' + (size * 0.6) + 'px "Syne", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('D', x + size / 2, y + size / 2);
+  var lensR = size * 0.08;
+  var lensX = x + size - size * 0.22;
+  var lensY = y + size * 0.22;
+  ctx.beginPath();
+  ctx.arc(lensX, lensY, lensR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = Math.max(1, size * 0.04);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawAccent(ctx, cw, ch, frame) {
