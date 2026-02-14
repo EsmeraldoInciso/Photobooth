@@ -236,15 +236,19 @@ function approveAllPhotos() {
 
   renderLivePreviewAsync(function() {
     if (state.settings.saveToGallery) {
+      // First save to get docId, then draw QR on canvas, then re-save with QR
       saveToGallery(function(docId) {
         lastSavedDocId = docId;
-        if (state.settings.showQR && docId) {
+        if (state.settings.showQR) {
           drawQRBadge(docId);
-          document.getElementById('btnViewQR').style.display = '';
-          showStatus('\u2601\uFE0F Saved to cloud with QR!', 'success');
-        } else if (state.settings.showQR) {
-          drawQRBadge(null);
-          showStatus('\uD83D\uDCF1 Saved locally (no QR link)', 'info');
+          // Re-save the image with QR+logo now on the canvas
+          reSaveWithOverlays(docId);
+          if (docId) {
+            document.getElementById('btnViewQR').style.display = '';
+            showStatus('\u2601\uFE0F Saved to cloud with QR!', 'success');
+          } else {
+            showStatus('\uD83D\uDCF1 Saved locally (no QR link)', 'info');
+          }
         } else if (docId) {
           showStatus('\u2601\uFE0F Saved to cloud!', 'success');
         } else {
@@ -258,6 +262,27 @@ function approveAllPhotos() {
       startKioskTimer();
     }
   });
+}
+
+function reSaveWithOverlays(docId) {
+  var canvas = document.getElementById('livePreviewCanvas');
+  var imageData = canvas.toDataURL('image/jpeg', 0.85);
+  if (docId && db) {
+    // Update the Firestore doc with the new image that includes QR+logo
+    try {
+      db.collection('gallery').doc(docId).update({ imageData: imageData }).then(function() {
+        console.log('[Gallery] Updated with QR overlay');
+      }).catch(function(e) { console.warn('[Gallery] Update failed:', e); });
+    } catch(e) { console.warn('[Gallery] Update error:', e); }
+  }
+  // Also update local storage if it exists
+  try {
+    var local = JSON.parse(localStorage.getItem('photobooth_gallery') || '[]');
+    if (local.length > 0) {
+      local[local.length - 1].imageData = imageData;
+      localStorage.setItem('photobooth_gallery', JSON.stringify(local));
+    }
+  } catch(e) {}
 }
 
 // ─── Async preview render (waits for all images to load) ────────
@@ -496,6 +521,8 @@ function updateKioskBtn() {
     btn.querySelector('.material-icons-round').textContent = state.kioskMode ? 'fullscreen_exit' : 'fullscreen';
     btn.title = state.kioskMode ? 'Exit Kiosk' : 'Kiosk Mode';
   }
+  var exitBtn = document.getElementById('kioskExitBtn');
+  if (exitBtn) exitBtn.style.display = state.kioskMode ? 'flex' : 'none';
 }
 
 function startKioskTimer() {
@@ -615,9 +642,9 @@ function drawBranding(ctx, cw, ch, bgColor) {
 }
 
 function drawDLogo(ctx, cw, ch, isDark) {
-  var size = cw * 0.06;
-  var x = cw * 0.03;
-  var y = ch - size - ch * 0.02;
+  var size = cw * 0.09;
+  var x = cw * 0.035;
+  var y = ch - size - ch * 0.015;
   var r = size * 0.2;
   ctx.save();
   var grad = ctx.createLinearGradient(x, y, x + size, y + size);
