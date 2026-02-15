@@ -70,10 +70,25 @@ if (auth) {
     console.log('[Auth] User:', user ? user.email : 'none');
 
     if (user) {
+      var isGoogle = user.providerData.length > 0 && user.providerData[0].providerId === 'google.com';
+
       if (PAGE_TYPE === 'public') {
+        // If unverified email user arrives at ?verify=1, stay on this page
+        if (!isGoogle && !user.emailVerified && window.location.search.indexOf('verify=1') !== -1) {
+          showPage();
+          if (typeof onAuthReady === 'function') onAuthReady(user);
+          return;
+        }
         window.location.replace(appUrl(''));
         return;
       }
+
+      // Private page: block unverified email users
+      if (!isGoogle && !user.emailVerified) {
+        window.location.replace(appUrl('login/?verify=1'));
+        return;
+      }
+
       showPage();
       if (typeof onAuthReady === 'function') onAuthReady(user);
     } else {
@@ -192,6 +207,8 @@ function handleSignup(name, email, password) {
     return cred.user.updateProfile({ displayName: name }).then(function() { return cred; });
   }).then(function(cred) {
     return recordDeviceSignup().then(function() { return cred; });
+  }).then(function(cred) {
+    return cred.user.sendEmailVerification().then(function() { return cred; });
   });
 }
 
@@ -204,6 +221,12 @@ function handleGoogleLogin() {
     }
     return result;
   });
+}
+
+function handleResendVerification() {
+  var user = auth.currentUser;
+  if (!user) return Promise.reject({ message: 'Not signed in.' });
+  return user.sendEmailVerification();
 }
 
 function handleLogout() { return auth.signOut(); }

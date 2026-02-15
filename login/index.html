@@ -50,6 +50,19 @@
         <div class="auth-status" id="authStatus"></div>
         <p class="recaptcha-note">Protected by reCAPTCHA</p>
       </div>
+
+      <!-- Email Verification Panel -->
+      <div class="auth-container" id="verifyPanel" style="display:none;">
+        <div class="auth-logo"><div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div></div>
+        <h1 class="auth-title">Verify Your Email</h1>
+        <p class="auth-subtitle" id="verifyMsg">We sent a verification link to your email. Click the link to verify, then come back.</p>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+          <button class="btn btn-primary btn-full" onclick="doCheckVerified()"><span class="material-icons-round">check_circle</span> I've Verified — Continue</button>
+          <button class="btn btn-full" onclick="doResend()" id="resendBtn"><span class="material-icons-round">email</span> Resend Email</button>
+          <button class="btn btn-full" onclick="handleLogout()" style="opacity:0.7;"><span class="material-icons-round">logout</span> Sign Out</button>
+        </div>
+        <div class="auth-status" id="verifyStatus"></div>
+      </div>
     </div>
   </div>
 
@@ -65,14 +78,25 @@
       document.getElementById('tabSignup').className = 'auth-tab' + (tab === 'signup' ? ' active' : '');
       document.getElementById('authStatus').textContent = '';
     }
+
+    function showVerifyPanel(email) {
+      document.querySelector('.auth-container').style.display = 'none';
+      var panel = document.getElementById('verifyPanel');
+      panel.style.display = 'block';
+      if (email) {
+        document.getElementById('verifyMsg').textContent = 'We sent a verification link to ' + email + '. Click the link to verify, then come back.';
+      }
+    }
+
     function doLogin() {
       var e = document.getElementById('loginEmail').value.trim();
       var p = document.getElementById('loginPassword').value;
       var s = document.getElementById('authStatus');
       if (!e || !p) { s.textContent = 'Fill in all fields.'; s.className = 'auth-status error'; return; }
       s.textContent = 'Signing in...'; s.className = 'auth-status';
-      handleLogin(e, p).catch(function(err) { s.textContent = err.message; s.className = 'auth-status error'; });
+      handleLogin(e, p).catch(function(err) { s.textContent = friendlyAuthError(err); s.className = 'auth-status error'; });
     }
+
     function doSignup() {
       var n = document.getElementById('signupName').value.trim();
       var e = document.getElementById('signupEmail').value.trim();
@@ -81,9 +105,49 @@
       if (!n || !e || !p) { s.textContent = 'Fill in all fields.'; s.className = 'auth-status error'; return; }
       if (p.length < 6) { s.textContent = 'Password must be 6+ characters.'; s.className = 'auth-status error'; return; }
       s.textContent = 'Creating account...'; s.className = 'auth-status';
-      handleSignup(n, e, p).catch(function(err) { s.textContent = err.message; s.className = 'auth-status error'; });
+      handleSignup(n, e, p).then(function() {
+        showVerifyPanel(e);
+      }).catch(function(err) { s.textContent = friendlyAuthError(err); s.className = 'auth-status error'; });
     }
-    function onAuthReady() {}
+
+    function doCheckVerified() {
+      var s = document.getElementById('verifyStatus');
+      s.textContent = 'Checking...'; s.className = 'auth-status';
+      auth.currentUser.reload().then(function() {
+        if (auth.currentUser.emailVerified) {
+          s.textContent = 'Verified!'; s.className = 'auth-status';
+          window.location.replace(appUrl(''));
+        } else {
+          s.textContent = 'Email not verified yet. Check your inbox and click the link.'; s.className = 'auth-status error';
+        }
+      }).catch(function() {
+        s.textContent = 'Could not check. Try again.'; s.className = 'auth-status error';
+      });
+    }
+
+    function doResend() {
+      var s = document.getElementById('verifyStatus');
+      var btn = document.getElementById('resendBtn');
+      btn.disabled = true;
+      s.textContent = 'Sending...'; s.className = 'auth-status';
+      handleResendVerification().then(function() {
+        s.textContent = 'Verification email sent!'; s.className = 'auth-status';
+        setTimeout(function() { btn.disabled = false; }, 30000);
+      }).catch(function(err) {
+        s.textContent = friendlyAuthError(err); s.className = 'auth-status error';
+        btn.disabled = false;
+      });
+    }
+
+    function onAuthReady(user) {
+      // If user is logged in but unverified and on ?verify=1, show verify panel
+      if (user && !user.emailVerified && window.location.search.indexOf('verify=1') !== -1) {
+        var isGoogle = user.providerData.length > 0 && user.providerData[0].providerId === 'google.com';
+        if (!isGoogle) {
+          showVerifyPanel(user.email);
+        }
+      }
+    }
   </script>
 </body>
 </html>
