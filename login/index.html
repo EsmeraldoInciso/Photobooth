@@ -28,7 +28,9 @@
     .auth-hero-features li span{font-size:0.85rem;color:var(--text-secondary);line-height:1.4}
     .auth-split>.auth-container,.auth-split>#verifyPanel{flex:1;flex-basis:0;border:none;border-radius:0;min-height:100vh;max-width:none;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:36px 40px;border-left:1px solid var(--border)}
     .auth-split>.auth-container>*,.auth-split>#verifyPanel>*{width:100%;max-width:400px}
+    .auth-card-header{display:none}
     @media(max-width:860px){
+      .auth-card-header{display:block;text-align:center;margin-bottom:8px}
       .auth-split{flex-direction:column;padding:20px}
       .auth-hero{display:none}
       .auth-split>.auth-container,.auth-split>#verifyPanel{min-height:auto;border-left:none;border:1px solid var(--border);border-radius:var(--r);padding:36px 32px}
@@ -54,6 +56,11 @@
         </div>
       </div>
       <div class="auth-container">
+        <div class="auth-card-header">
+          <div class="auth-logo"><div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div></div>
+          <h1 class="auth-title">D<span>Snap</span></h1>
+          <p class="auth-subtitle">Every moment, perfectly captured</p>
+        </div>
         <div class="auth-tabs">
           <button class="auth-tab active" id="tabLogin" onclick="showTab('login')">Sign In</button>
           <button class="auth-tab" id="tabSignup" onclick="showTab('signup')">Sign Up</button>
