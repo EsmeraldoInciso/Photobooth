@@ -12,17 +12,47 @@
   <script src="https://www.google.com/recaptcha/api.js?render=6Ld0RWgsAAAAABRdIcHVQcVkgAswfd_wb4mluzfY"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
   <script>var PAGE_TYPE = 'public';</script>
+  <style>
+    .auth-split{flex-direction:row;gap:0;padding:0}
+    .auth-hero{display:flex;align-items:center;justify-content:center;flex:1;padding:48px;background:linear-gradient(135deg,rgba(37,99,235,0.12) 0%,rgba(6,182,212,0.08) 100%);min-height:100vh}
+    .auth-hero-inner{max-width:380px}
+    .auth-hero-logo{margin-bottom:12px;display:flex}.auth-hero-logo .nav-logo{width:56px;height:56px;border-radius:14px}.auth-hero-logo .nav-logo-letter{font-size:30px}.auth-hero-logo .nav-logo-lens{top:7px;right:7px;width:11px;height:11px;border-width:2px}
+    .auth-hero-title{font-family:var(--font-d);font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-0.03em;margin-bottom:4px}
+    .auth-hero-title span{background:linear-gradient(135deg,var(--primary-light),var(--accent-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .auth-hero-tagline{color:var(--text-secondary);font-size:1.1rem;margin-bottom:32px}
+    .auth-hero-features{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:20px}
+    .auth-hero-features li{display:flex;align-items:flex-start;gap:14px;color:var(--text)}
+    .auth-hero-features li>.material-icons-round{font-size:28px;color:var(--primary-light);flex-shrink:0;margin-top:2px}
+    .auth-hero-features li div{display:flex;flex-direction:column;gap:2px}
+    .auth-hero-features li strong{font-size:0.95rem;font-weight:600}
+    .auth-hero-features li span{font-size:0.85rem;color:var(--text-secondary);line-height:1.4}
+    .auth-split>.auth-container,.auth-split>#verifyPanel{flex:0 0 auto;margin:auto;border:none;border-radius:0;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:36px 40px;border-left:1px solid var(--border)}
+    @media(max-width:860px){
+      .auth-split{flex-direction:column;padding:20px}
+      .auth-hero{display:none}
+      .auth-split>.auth-container,.auth-split>#verifyPanel{min-height:auto;border-left:none;border:1px solid var(--border);border-radius:var(--r);padding:36px 32px}
+    }
+  </style>
 </head>
 <body>
   <div class="splash-screen" id="splashScreen"><div class="splash-inner"><div class="splash-logo"><span>D</span><div class="splash-logo-lens"></div></div><div class="splash-title">D<span>Snap</span></div><div class="splash-spinner"></div></div></div>
 
   <div id="pageContent" style="display:none;">
-    <div class="auth-screen">
+    <div class="auth-screen auth-split">
+      <div class="auth-hero">
+        <div class="auth-hero-inner">
+          <div class="auth-hero-logo"><div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div></div>
+          <h2 class="auth-hero-title">D<span>Snap</span></h2>
+          <p class="auth-hero-tagline">Your photo booth, reimagined.</p>
+          <ul class="auth-hero-features">
+            <li><span class="material-icons-round">photo_camera</span><div><strong>Capture Moments</strong><span>Snap stunning photos with real-time filters and effects</span></div></li>
+            <li><span class="material-icons-round">collections</span><div><strong>Beautiful Galleries</strong><span>Browse and relive your memories in a sleek gallery</span></div></li>
+            <li><span class="material-icons-round">share</span><div><strong>Share Instantly</strong><span>Download or share your photos with one tap</span></div></li>
+            <li><span class="material-icons-round">group</span><div><strong>Events Made Easy</strong><span>Perfect for parties, weddings, and celebrations</span></div></li>
+          </ul>
+        </div>
+      </div>
       <div class="auth-container">
-        <div class="auth-logo"><div class="nav-logo"><span class="nav-logo-letter">D</span><div class="nav-logo-lens"></div></div></div>
-        <h1 class="auth-title">D<span>Snap</span></h1>
-        <p class="auth-subtitle">Every moment, perfectly captured</p>
-
         <div class="auth-tabs">
           <button class="auth-tab active" id="tabLogin" onclick="showTab('login')">Sign In</button>
           <button class="auth-tab" id="tabSignup" onclick="showTab('signup')">Sign Up</button>
