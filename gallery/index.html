@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
@@ -37,32 +38,36 @@
       </div>
     </nav>
 
-    <main class="main-content">
-      <div class="gallery-header">
-        <div class="gallery-stats">
-          <span class="material-icons-round">photo_library</span>
-          <span id="galleryCount">Loading...</span>
-        </div>
-      </div>
+```
+<main class="main-content">
+  <div class="gallery-header">
+    <div class="gallery-stats">
+      <span class="material-icons-round">photo_library</span>
+      <span id="galleryCount">Loading...</span>
+    </div>
+  </div>
 
-      <div id="galleryLoading" class="gallery-loading">
-        <div class="splash-spinner" style="margin:40px auto;"></div>
-        <p style="text-align:center;color:#8585A8;">Loading gallery...</p>
-      </div>
+  <div id="galleryLoading" class="gallery-loading">
+    <div class="splash-spinner" style="margin:40px auto;"></div>
+    <p style="text-align:center;color:#8585A8;">Loading gallery...</p>
+  </div>
 
-      <div id="galleryEmpty" class="gallery-empty" style="display:none;">
-        <span class="material-icons-round" style="font-size:64px;color:#28284A;">photo_library</span>
-        <h3>No photos yet</h3>
-        <p>Photos will appear here after they're captured and approved.</p>
-        <a href="../" class="btn btn-primary"><span class="material-icons-round">camera</span> Take Photos</a>
-      </div>
+  <div id="galleryEmpty" class="gallery-empty" style="display:none;">
+    <span class="material-icons-round" style="font-size:64px;color:#28284A;">photo_library</span>
+    <h3>No photos yet</h3>
+    <p>Photos will appear here after they're captured and approved.</p>
+    <a href="../" class="btn btn-primary"><span class="material-icons-round">camera</span> Take Photos</a>
+  </div>
 
-      <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
-    </main>
-    <footer class="app-footer"><div class="footer-inner"><div class="footer-top"><div class="footer-brand-col"><div class="footer-brand-row"><div class="footer-mark"><span>D</span></div><span class="footer-name">DSnap</span></div><p class="footer-tagline">Every moment, perfectly captured.</p></div><div class="footer-links-col"><h4>Navigate</h4><a href="../">Booth</a><a href="./">Gallery</a><a href="../profile/">Profile</a></div></div><div class="footer-bottom"><span>&copy; 2026 DSnap. Built by Don.</span><span>Powered by Firebase</span></div></div></footer>
+  <div id="galleryGrid" class="gallery-grid" style="display:none;"></div>
+</main>
+<footer class="app-footer"><div class="footer-inner"><div class="footer-top"><div class="footer-brand-col"><div class="footer-brand-row"><div class="footer-mark"><span>D</span></div><span class="footer-name">DSnap</span></div><p class="footer-tagline">Every moment, perfectly captured.</p></div><div class="footer-links-col"><h4>Navigate</h4><a href="../">Booth</a><a href="./">Gallery</a><a href="../profile/">Profile</a></div></div><div class="footer-bottom"><span>&copy; 2026 DSnap. Built by Don.</span><span>Powered by Firebase</span></div></div></footer>
+```
+
   </div>
 
   <!-- Lightbox -->
+
   <div class="lightbox-overlay" id="lightboxOverlay" style="display:none;">
     <button class="lightbox-close" onclick="closeLightbox()"><span class="material-icons-round">close</span></button>
     <div class="lightbox-center">
@@ -78,8 +83,11 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
   <script src="../auth.js"></script>
 
   <script>
@@ -100,12 +108,17 @@
       var localPhotos = [];
 
       try {
-        localPhotos = JSON.parse(localStorage.getItem('pb_gallery') || '[]');
+        var lkey = 'dsnap_gallery';
+        try { var u = firebase.auth().currentUser; if (u) lkey = 'dsnap_gallery_' + u.uid; } catch(e) {}
+        localPhotos = JSON.parse(localStorage.getItem(lkey) || '[]');
         localPhotos.forEach(function(p) { p.storage = 'local'; });
       } catch(e) { localPhotos = []; }
 
       if (db) {
-        db.collection('gallery').orderBy('createdAt', 'desc').limit(100).get()
+        var uid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+        var query = db.collection('gallery');
+        if (uid) query = query.where('userId', '==', uid);
+        query.orderBy('createdAt', 'desc').limit(100).get()
           .then(function(snapshot) {
             snapshot.forEach(function(doc) {
               var d = doc.data();
@@ -276,5 +289,6 @@
       if (document.getElementById('lightboxOverlay').style.display === 'flex' && e.key === 'Escape') closeLightbox();
     });
   </script>
+
 </body>
 </html>
