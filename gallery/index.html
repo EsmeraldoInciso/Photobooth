@@ -118,13 +118,18 @@
         var uid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
         var query = db.collection('gallery');
         if (uid) query = query.where('userId', '==', uid);
-        query.orderBy('createdAt', 'desc').limit(100).get()
+        query.limit(100).get()
           .then(function(snapshot) {
             snapshot.forEach(function(doc) {
               var d = doc.data();
               d.id = doc.id;
               d.storage = 'cloud';
               firebasePhotos.push(d);
+            });
+            firebasePhotos.sort(function(a, b) {
+              var ta = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt).getTime()) : 0;
+              var tb = b.createdAt ? (b.createdAt.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt).getTime()) : 0;
+              return tb - ta;
             });
             galleryPhotos = firebasePhotos.concat(localPhotos);
             showGallery();
